@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Multiplication Practice</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #70a1ff, #1e90ff);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    #question-box {
+        font-size: 28px;
+        margin: 20px 0;
+        font-weight: bold;
+    }
+
+    input {
+        font-size: 24px;
+        padding: 10px;
+        width: 100px;
+        text-align: center;
+    }
+
+    button {
+        margin-top: 20px;
+        font-size: 24px;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 10px;
+        background: #ffa502;
+        color: white;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #ff7f50;
+    }
+
+    /* Fun star animation */
+    .star {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        background: yellow;
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 
+                           68% 57%, 79% 91%, 50% 70%,
+                           21% 91%, 32% 57%, 2% 35%, 
+                           39% 35%);
+        animation: fly 1s ease-out forwards;
+    }
+
+    @keyframes fly {
+        from { transform: translateY(0) scale(1); opacity: 1; }
+        to { transform: translateY(-200px) scale(0.3); opacity: 0; }
+    }
+
+    #results {
+        margin-top: 30px;
+        font-size: 26px;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Multiplication Practice</h1>
+
+<div id="question-box"></div>
+
+<input type="number" id="answer" placeholder="Answer" autofocus>
+<br>
+<button onclick="submitAnswer()">Submit</button>
+
+<div id="results"></div>
+
+<script>
+let questions = [];
+let current = 0;
+let score = 0;
+
+// Generate 30 questions (numbers 1–11)
+function generateQuestions() {
+    for (let i = 0; i < 30; i++) {
+        let a = Math.ceil(Math.random() * 11);
+        let b = Math.ceil(Math.random() * 11);
+        questions.push({ a, b });
+    }
+}
+
+function showQuestion() {
+    if (current >= questions.length) {
+        endGame();
+        return;
+    }
+
+    let q = questions[current];
+    document.getElementById("question-box").innerHTML =
+        `Question ${current + 1}/30: <br> <span>${q.a} × ${q.b} = ?</span>`;
+}
+
+function sprinkleStars() {
+    for (let i = 0; i < 6; i++) {
+        let star = document.createElement("div");
+        star.classList.add("star");
+        star.style.left = (Math.random() * window.innerWidth) + "px";
+        star.style.top = (window.innerHeight - 40) + "px";
+        document.body.appendChild(star);
+
+        setTimeout(() => star.remove(), 1000);
+    }
+}
+
+function submitAnswer() {
+    let answer = Number(document.getElementById("answer").value);
+    let correct = questions[current].a * questions[current].b;
+
+    if (answer === correct) {
+        score++;
+        sprinkleStars(); // fun animation
+    }
+
+    document.getElementById("answer").value = "";
+    current++;
+    showQuestion();
+}
+
+// League determination
+function getLeague(score) {
+    if (score === 30) return "🌟 Grandmaster League";
+    if (score >= 25) return "🔥 Diamond League";
+    if (score >= 20) return "💎 Gold League";
+    if (score >= 15) return "🥈 Silver League";
+    return "🥉 Bronze League";
+}
+
+function endGame() {
+    let avg = Number(localStorage.getItem("avgScore")) || 0;
+    let attempts = Number(localStorage.getItem("attempts")) || 0;
+
+    // update average
+    let newAvg = ((avg * attempts) + score) / (attempts + 1);
+    localStorage.setItem("avgScore", newAvg);
+    localStorage.setItem("attempts", attempts + 1);
+
+    let league = getLeague(score);
+
+    document.getElementById("results").innerHTML = `
+        <p>Your Score: <strong>${score}/30</strong></p>
+        <p>Your League: <strong>${league}</strong></p>
+        <p>Your Lifetime Average: <strong>${newAvg.toFixed(2)}</strong></p>
+        <button onclick="location.reload()">Play Again</button>
+    `;
+}
+
+generateQuestions();
+showQuestion();
+</script>
+
+</body>
+</html>
