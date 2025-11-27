@@ -2,50 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Multiplication RPG Battle</title>
+<title>Multiplication RPG — Arcane Tower</title>
+
 <style>
     body {
         margin: 0;
         padding: 0;
-        font-family: "Georgia", serif;
-        background: linear-gradient(120deg, #2c0f41, #14001f);
+        font-family: 'Georgia', serif;
+        background: radial-gradient(circle at center, #3a0057, #120018);
         color: #f8e7ff;
         text-align: center;
+        overflow-x: hidden;
     }
 
     h1 {
         font-size: 42px;
         margin-top: 20px;
-        color: #e6c3ff;
-        text-shadow: 0 0 10px #ff8df7;
-    }
-
-    #game-container {
-        width: 90%;
-        margin: auto;
-        margin-top: 20px;
+        color: #ffd6ff;
+        text-shadow: 0 0 15px #ff6cff;
     }
 
     #battlefield {
+        margin-top: 40px;
         display: flex;
         justify-content: space-around;
         align-items: center;
-        margin-top: 40px;
     }
 
     .character {
         width: 200px;
         height: 200px;
         background-size: cover;
-        background-position: center;
     }
 
     #hero {
-        background-image: url('https://i.imgur.com/0ZbmO2s.png'); /* cartoon knight */
+        background-image: url('https://i.imgur.com/0ZbmO2s.png');
     }
 
     #monster {
-        background-image: url('https://i.imgur.com/8uOZ4Cp.png'); /* cartoon slime monster */
+        background-image: url('https://i.imgur.com/8uOZ4Cp.png');
+        transition: opacity 0.5s, transform 0.5s;
     }
 
     #hp-bars {
@@ -54,17 +50,16 @@
     }
 
     .hp-bar {
-        height: 25px;
         width: 60%;
+        height: 25px;
         background: #3a003a;
         border: 2px solid #ffb7ff;
         margin: 10px auto;
-        position: relative;
     }
 
     .hp-fill {
-        background: #ff55ff;
         height: 100%;
+        background: #ff55ff;
         width: 100%;
         transition: width 0.5s;
     }
@@ -86,90 +81,122 @@
     }
 
     #log {
-        margin-top: 20px;
         font-size: 20px;
-        min-height: 50px;
+        margin-top: 20px;
+        min-height: 60px;
+    }
+
+    #streak-indicator {
+        font-size: 22px;
+        margin-top: 10px;
+        color: #ffd0ff;
+        text-shadow: 0 0 10px #ff7cff;
+        transition: transform 0.2s;
     }
 
     #results {
         margin-top: 40px;
-        font-size: 26px;
+        font-size: 28px;
         font-weight: bold;
     }
 
     button {
-        margin-top: 20px;
-        font-size: 26px;
+        margin-top: 25px;
         padding: 12px 25px;
+        background: #c200ff;
         border: none;
         border-radius: 10px;
-        background: #b300ff;
         color: white;
+        font-size: 26px;
         cursor: pointer;
-        transition: 0.3s;
     }
-    button:hover {
-        background: #ff28ff;
-    }
+    button:hover { background: #ff2eff; }
 
-    /* Attack animation */
-    .slash {
+    /* Magic blast animation */
+    .blast {
         position: absolute;
-        width: 120px;
-        height: 120px;
-        background: url('https://i.imgur.com/2nKSLpV.png') center/cover;
-        animation: slashAnim 0.5s forwards;
+        width: 150px;
+        height: 150px;
+        background: url('https://i.imgur.com/uP0R0yG.png') center/cover;
+        animation: blastAnim 0.6s forwards;
         pointer-events: none;
     }
 
-    @keyframes slashAnim {
-        from { transform: scale(0.2) rotate(0deg); opacity: 1; }
-        to { transform: scale(1.4) rotate(180deg); opacity: 0; }
+    @keyframes blastAnim {
+        from { transform: scale(0.3); opacity: 1; }
+        to { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* Monster death explosion */
+    .explode {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        background: url('https://i.imgur.com/EYlS7rG.png') center/cover;
+        animation: explodeAnim 0.8s forwards;
+    }
+
+    @keyframes explodeAnim {
+        from { opacity: 1; transform: scale(0.8); }
+        to { opacity: 0; transform: scale(1.6); }
+    }
+
+    /* Hero damage flash */
+    #hero.hit {
+        animation: flashRed 0.4s;
+    }
+
+    @keyframes flashRed {
+        0% { filter: brightness(1); }
+        50% { filter: brightness(3) saturate(2); }
+        100% { filter: brightness(1); }
     }
 </style>
 </head>
 
 <body>
 
-<h1>⚔️ Multiplication RPG: Battle of the Arcane Tower ⚔️</h1>
+<h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
 
-<div id="game-container">
-    <div id="battlefield">
-        <div id="hero" class="character"></div>
-        <div id="monster" class="character"></div>
-    </div>
-
-    <div id="hp-bars">
-        Hero HP
-        <div class="hp-bar"><div id="hero-hp" class="hp-fill"></div></div>
-        Monster HP
-        <div class="hp-bar"><div id="monster-hp" class="hp-fill"></div></div>
-    </div>
-
-    <div id="question-box"></div>
-
-    <input type="number" id="answer" placeholder="Type answer & press ENTER">
-
-    <div id="log"></div>
-
-    <div id="results"></div>
+<div id="battlefield">
+    <div id="hero" class="character"></div>
+    <div id="monster" class="character"></div>
 </div>
+
+<div id="hp-bars">
+    Hero HP
+    <div class="hp-bar"><div id="hero-hp" class="hp-fill"></div></div>
+
+    Monster HP
+    <div class="hp-bar"><div id="monster-hp" class="hp-fill"></div></div>
+</div>
+
+<div id="streak-indicator">Streak: 0</div>
+
+<div id="question-box"></div>
+
+<input type="number" id="answer" placeholder="Press ENTER">
+
+<div id="log"></div>
+
+<div id="results"></div>
 
 <script>
 let questions = [];
 let current = 0;
 let score = 0;
 
-let heroHP = 100;
-let monsterHP = 100;
+let streak = 0;
+let monstersDefeated = 0;
 
-// Generate 30 questions
-function generateQuestions() {
-    for (let i = 0; i < 30; i++) {
-        let a = Math.ceil(Math.random() * 11);
-        let b = Math.ceil(Math.random() * 11);
-        questions.push({ a, b });
-    }
+let heroHP = 100;
+let monsterHP = 60;
+
+// === Generate 30 questions ===
+for (let i = 0; i < 30; i++) {
+    let a = Math.ceil(Math.random() * 11);
+    let b = Math.ceil(Math.random() * 11);
+    questions.push({ a, b });
 }
 
 function showQuestion() {
@@ -177,20 +204,47 @@ function showQuestion() {
         endGame();
         return;
     }
+
     let q = questions[current];
     document.getElementById("question-box").innerHTML =
-        `Question ${current + 1}/30:<br> <span>${q.a} × ${q.b} = ?</span>`;
+        `Question ${current + 1}/30:<br>${q.a} × ${q.b} = ?`;
 }
 
-function animateSlash(targetId) {
+// === Magic blast animation ===
+function magicBlast(targetId) {
     let target = document.getElementById(targetId);
-    let slash = document.createElement("div");
-    slash.className = "slash";
+    let blast = document.createElement("div");
+    blast.className = "blast";
+
     let rect = target.getBoundingClientRect();
-    slash.style.left = (rect.left + rect.width/2 - 60) + "px";
-    slash.style.top = (rect.top + rect.height/2 - 60) + "px";
-    document.body.appendChild(slash);
-    setTimeout(() => slash.remove(), 500);
+    blast.style.left = (rect.left + rect.width/2 - 75) + "px";
+    blast.style.top = (rect.top + rect.height/2 - 75) + "px";
+
+    document.body.appendChild(blast);
+    setTimeout(() => blast.remove(), 600);
+}
+
+// === Monster explosion ===
+function explodeMonster() {
+    let target = document.getElementById("monster");
+    let boom = document.createElement("div");
+    boom.className = "explode";
+
+    let rect = target.getBoundingClientRect();
+    boom.style.left = (rect.left + rect.width/2 - 100) + "px";
+    boom.style.top = (rect.top + rect.height/2 - 100) + "px";
+
+    document.body.appendChild(boom);
+    setTimeout(() => boom.remove(), 800);
+}
+
+// === Spawn new monster ===
+function spawnMonster() {
+    monsterHP = 60;
+    document.getElementById("monster-hp").style.width = "100%";
+    let mon = document.getElementById("monster");
+    mon.style.opacity = 1;
+    mon.style.transform = "scale(1)";
 }
 
 function submitAnswer() {
@@ -201,16 +255,45 @@ function submitAnswer() {
 
     if (userAnswer === correct) {
         score++;
-        monsterHP -= 10;
-        animateSlash("monster");
+        streak++;
+
+        // streak damage formula
+        let dmg = 10 + (streak * 5);
+        if (dmg > 25) dmg = 25;
+
+        monsterHP -= dmg;
+        magicBlast("monster");
+
         document.getElementById("log").innerHTML =
-            `✨Correct! You dealt 10 damage!`;
+            `✨ Correct! You dealt <strong>${dmg}</strong> damage!`;
+
+        // Monster defeated?
+        if (monsterHP <= 0) {
+            monstersDefeated++;
+            explodeMonster();
+
+            document.getElementById("log").innerHTML +=
+                `<br>💥 You defeated the monster!`;
+
+            setTimeout(spawnMonster, 600);
+        }
+
     } else {
+        streak = 0;
         heroHP -= 10;
-        animateSlash("hero");
+
+        document.getElementById("hero").classList.add("hit");
+        setTimeout(() => document.getElementById("hero").classList.remove("hit"), 400);
+
         document.getElementById("log").innerHTML =
-            `❌ Wrong! Correct answer: ${correct}. The monster hits you!`;
+            `❌ Wrong! Correct: <strong>${correct}</strong>. Monster hits you!`;
     }
+
+    document.getElementById("streak-indicator").innerHTML = `Streak: ${streak}`;
+    document.getElementById("streak-indicator").style.transform = "scale(1.3)";
+    setTimeout(() => {
+        document.getElementById("streak-indicator").style.transform = "scale(1)";
+    }, 150);
 
     document.getElementById("hero-hp").style.width = heroHP + "%";
     document.getElementById("monster-hp").style.width = monsterHP + "%";
@@ -220,43 +303,25 @@ function submitAnswer() {
     showQuestion();
 }
 
-// Allow ENTER key to submit
+// ENTER key submits
 document.getElementById("answer").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-        submitAnswer();
-    }
+    if (e.key === "Enter") submitAnswer();
 });
 
-// RPG ranking
-function getRank(score) {
-    if (score === 30) return "👑 Archmage of Multiplication";
-    if (score >= 25) return "🔥 Dragon Knight";
-    if (score >= 20) return "⚔️ Rune Warrior";
-    if (score >= 15) return "🛡️ Apprentice Fighter";
-    return "🌱 Novice Adventurer";
-}
-
 function endGame() {
-    // Update lifetime average
-    let avg = Number(localStorage.getItem("avgScore")) || 0;
-    let attempts = Number(localStorage.getItem("attempts")) || 0;
-    let newAvg = ((avg * attempts) + score) / (attempts + 1);
-
-    localStorage.setItem("avgScore", newAvg);
-    localStorage.setItem("attempts", attempts + 1);
-
-    let rank = getRank(score);
-
-    document.getElementById("results").innerHTML = `
-        <p>Battle Finished!</p>
+    let finalMsg = `
+        <p>You Defeated <strong>${monstersDefeated}</strong> monsters!</p>
         <p>Your Score: <strong>${score}/30</strong></p>
-        <p>Your Rank: <strong>${rank}</strong></p>
-        <p>Your Lifetime Average: <strong>${newAvg.toFixed(2)}</strong></p>
-        <button onclick="location.reload()">Play Again</button>
     `;
+
+    if (score === 30) {
+        finalMsg += `<p>🌟 PERFECT! You conquered ALL monsters of the Arcane Tower! 🌟</p>`;
+    }
+
+    document.getElementById("results").innerHTML = finalMsg +
+        `<button onclick="location.reload()">Play Again</button>`;
 }
 
-generateQuestions();
 showQuestion();
 </script>
 
