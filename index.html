@@ -2,94 +2,168 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Multiplication Practice</title>
+<title>Multiplication RPG Battle</title>
 <style>
     body {
-        font-family: Arial, sans-serif;
-        background: linear-gradient(135deg, #70a1ff, #1e90ff);
-        color: white;
-        padding: 20px;
+        margin: 0;
+        padding: 0;
+        font-family: "Georgia", serif;
+        background: linear-gradient(120deg, #2c0f41, #14001f);
+        color: #f8e7ff;
         text-align: center;
     }
 
     h1 {
-        font-size: 40px;
-        margin-bottom: 10px;
+        font-size: 42px;
+        margin-top: 20px;
+        color: #e6c3ff;
+        text-shadow: 0 0 10px #ff8df7;
+    }
+
+    #game-container {
+        width: 90%;
+        margin: auto;
+        margin-top: 20px;
+    }
+
+    #battlefield {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 40px;
+    }
+
+    .character {
+        width: 200px;
+        height: 200px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    #hero {
+        background-image: url('https://i.imgur.com/0ZbmO2s.png'); /* cartoon knight */
+    }
+
+    #monster {
+        background-image: url('https://i.imgur.com/8uOZ4Cp.png'); /* cartoon slime monster */
+    }
+
+    #hp-bars {
+        margin-top: 20px;
+        font-size: 24px;
+    }
+
+    .hp-bar {
+        height: 25px;
+        width: 60%;
+        background: #3a003a;
+        border: 2px solid #ffb7ff;
+        margin: 10px auto;
+        position: relative;
+    }
+
+    .hp-fill {
+        background: #ff55ff;
+        height: 100%;
+        width: 100%;
+        transition: width 0.5s;
     }
 
     #question-box {
-        font-size: 28px;
-        margin: 20px 0;
+        margin-top: 30px;
+        font-size: 32px;
         font-weight: bold;
     }
 
     input {
-        font-size: 24px;
-        padding: 10px;
-        width: 100px;
+        margin-top: 15px;
+        font-size: 26px;
+        padding: 8px;
+        width: 150px;
         text-align: center;
+        border-radius: 10px;
+        border: none;
+    }
+
+    #log {
+        margin-top: 20px;
+        font-size: 20px;
+        min-height: 50px;
+    }
+
+    #results {
+        margin-top: 40px;
+        font-size: 26px;
+        font-weight: bold;
     }
 
     button {
         margin-top: 20px;
-        font-size: 24px;
+        font-size: 26px;
         padding: 12px 25px;
         border: none;
         border-radius: 10px;
-        background: #ffa502;
+        background: #b300ff;
         color: white;
         cursor: pointer;
         transition: 0.3s;
     }
-
     button:hover {
-        background: #ff7f50;
+        background: #ff28ff;
     }
 
-    /* Fun star animation */
-    .star {
-        position: fixed;
-        width: 20px;
-        height: 20px;
-        background: yellow;
-        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 
-                           68% 57%, 79% 91%, 50% 70%,
-                           21% 91%, 32% 57%, 2% 35%, 
-                           39% 35%);
-        animation: fly 1s ease-out forwards;
+    /* Attack animation */
+    .slash {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        background: url('https://i.imgur.com/2nKSLpV.png') center/cover;
+        animation: slashAnim 0.5s forwards;
+        pointer-events: none;
     }
 
-    @keyframes fly {
-        from { transform: translateY(0) scale(1); opacity: 1; }
-        to { transform: translateY(-200px) scale(0.3); opacity: 0; }
-    }
-
-    #results {
-        margin-top: 30px;
-        font-size: 26px;
-        font-weight: bold;
+    @keyframes slashAnim {
+        from { transform: scale(0.2) rotate(0deg); opacity: 1; }
+        to { transform: scale(1.4) rotate(180deg); opacity: 0; }
     }
 </style>
 </head>
 
 <body>
 
-<h1>Multiplication Practice</h1>
+<h1>⚔️ Multiplication RPG: Battle of the Arcane Tower ⚔️</h1>
 
-<div id="question-box"></div>
+<div id="game-container">
+    <div id="battlefield">
+        <div id="hero" class="character"></div>
+        <div id="monster" class="character"></div>
+    </div>
 
-<input type="number" id="answer" placeholder="Answer" autofocus>
-<br>
-<button onclick="submitAnswer()">Submit</button>
+    <div id="hp-bars">
+        Hero HP
+        <div class="hp-bar"><div id="hero-hp" class="hp-fill"></div></div>
+        Monster HP
+        <div class="hp-bar"><div id="monster-hp" class="hp-fill"></div></div>
+    </div>
 
-<div id="results"></div>
+    <div id="question-box"></div>
+
+    <input type="number" id="answer" placeholder="Type answer & press ENTER">
+
+    <div id="log"></div>
+
+    <div id="results"></div>
+</div>
 
 <script>
 let questions = [];
 let current = 0;
 let score = 0;
 
-// Generate 30 questions (numbers 1–11)
+let heroHP = 100;
+let monsterHP = 100;
+
+// Generate 30 questions
 function generateQuestions() {
     for (let i = 0; i < 30; i++) {
         let a = Math.ceil(Math.random() * 11);
@@ -99,65 +173,84 @@ function generateQuestions() {
 }
 
 function showQuestion() {
-    if (current >= questions.length) {
+    if (current >= questions.length || heroHP <= 0) {
         endGame();
         return;
     }
-
     let q = questions[current];
     document.getElementById("question-box").innerHTML =
-        `Question ${current + 1}/30: <br> <span>${q.a} × ${q.b} = ?</span>`;
+        `Question ${current + 1}/30:<br> <span>${q.a} × ${q.b} = ?</span>`;
 }
 
-function sprinkleStars() {
-    for (let i = 0; i < 6; i++) {
-        let star = document.createElement("div");
-        star.classList.add("star");
-        star.style.left = (Math.random() * window.innerWidth) + "px";
-        star.style.top = (window.innerHeight - 40) + "px";
-        document.body.appendChild(star);
-
-        setTimeout(() => star.remove(), 1000);
-    }
+function animateSlash(targetId) {
+    let target = document.getElementById(targetId);
+    let slash = document.createElement("div");
+    slash.className = "slash";
+    let rect = target.getBoundingClientRect();
+    slash.style.left = (rect.left + rect.width/2 - 60) + "px";
+    slash.style.top = (rect.top + rect.height/2 - 60) + "px";
+    document.body.appendChild(slash);
+    setTimeout(() => slash.remove(), 500);
 }
 
 function submitAnswer() {
-    let answer = Number(document.getElementById("answer").value);
-    let correct = questions[current].a * questions[current].b;
+    let input = document.getElementById("answer");
+    let userAnswer = Number(input.value);
+    let q = questions[current];
+    let correct = q.a * q.b;
 
-    if (answer === correct) {
+    if (userAnswer === correct) {
         score++;
-        sprinkleStars(); // fun animation
+        monsterHP -= 10;
+        animateSlash("monster");
+        document.getElementById("log").innerHTML =
+            `✨Correct! You dealt 10 damage!`;
+    } else {
+        heroHP -= 10;
+        animateSlash("hero");
+        document.getElementById("log").innerHTML =
+            `❌ Wrong! Correct answer: ${correct}. The monster hits you!`;
     }
 
-    document.getElementById("answer").value = "";
+    document.getElementById("hero-hp").style.width = heroHP + "%";
+    document.getElementById("monster-hp").style.width = monsterHP + "%";
+
+    input.value = "";
     current++;
     showQuestion();
 }
 
-// League determination
-function getLeague(score) {
-    if (score === 30) return "🌟 Grandmaster League";
-    if (score >= 25) return "🔥 Diamond League";
-    if (score >= 20) return "💎 Gold League";
-    if (score >= 15) return "🥈 Silver League";
-    return "🥉 Bronze League";
+// Allow ENTER key to submit
+document.getElementById("answer").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        submitAnswer();
+    }
+});
+
+// RPG ranking
+function getRank(score) {
+    if (score === 30) return "👑 Archmage of Multiplication";
+    if (score >= 25) return "🔥 Dragon Knight";
+    if (score >= 20) return "⚔️ Rune Warrior";
+    if (score >= 15) return "🛡️ Apprentice Fighter";
+    return "🌱 Novice Adventurer";
 }
 
 function endGame() {
+    // Update lifetime average
     let avg = Number(localStorage.getItem("avgScore")) || 0;
     let attempts = Number(localStorage.getItem("attempts")) || 0;
-
-    // update average
     let newAvg = ((avg * attempts) + score) / (attempts + 1);
+
     localStorage.setItem("avgScore", newAvg);
     localStorage.setItem("attempts", attempts + 1);
 
-    let league = getLeague(score);
+    let rank = getRank(score);
 
     document.getElementById("results").innerHTML = `
+        <p>Battle Finished!</p>
         <p>Your Score: <strong>${score}/30</strong></p>
-        <p>Your League: <strong>${league}</strong></p>
+        <p>Your Rank: <strong>${rank}</strong></p>
         <p>Your Lifetime Average: <strong>${newAvg.toFixed(2)}</strong></p>
         <button onclick="location.reload()">Play Again</button>
     `;
