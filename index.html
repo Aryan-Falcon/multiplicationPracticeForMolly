@@ -11,15 +11,56 @@
         font-family: 'Georgia', serif;
         background: radial-gradient(circle at center, #3a0057, #120018);
         color: #f8e7ff;
-        text-align: center;
         overflow-x: hidden;
     }
 
     h1 {
+        text-align: center;
         font-size: 42px;
         margin-top: 20px;
         color: #ffd6ff;
         text-shadow: 0 0 15px #ff6cff;
+    }
+
+    /* === RANK PROGRESS BAR (LEFT SIDE) === */
+    #rank-panel {
+        position: fixed;
+        top: 50px;
+        left: 20px;
+        height: 500px;
+        width: 150px;
+        display: flex;
+        gap: 10px;
+        z-index: 200;
+    }
+
+    #rank-bar-container {
+        width: 20px;
+        height: 500px;
+        background: #2a0038;
+        border: 2px solid #ff9dff;
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    #rank-fill {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 0%;
+        background: linear-gradient(to top, #ff00ff, #ffb7ff);
+        transition: height 0.4s ease-out;
+    }
+
+    #rank-labels {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 500px;
+        font-size: 16px;
+        padding-left: 5px;
+        text-shadow: 0 0 8px #ff7cff;
     }
 
     #battlefield {
@@ -27,6 +68,7 @@
         display: flex;
         justify-content: space-around;
         align-items: center;
+        text-align: center;
     }
 
     .character {
@@ -46,6 +88,7 @@
 
     #hp-bars {
         margin-top: 20px;
+        text-align: center;
         font-size: 24px;
     }
 
@@ -68,6 +111,7 @@
         margin-top: 30px;
         font-size: 32px;
         font-weight: bold;
+        text-align: center;
     }
 
     input {
@@ -75,6 +119,9 @@
         font-size: 26px;
         padding: 8px;
         width: 150px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
         text-align: center;
         border-radius: 10px;
         border: none;
@@ -84,12 +131,14 @@
         font-size: 20px;
         margin-top: 20px;
         min-height: 60px;
+        text-align: center;
     }
 
     #streak-indicator {
         font-size: 22px;
         margin-top: 10px;
         color: #ffd0ff;
+        text-align: center;
         text-shadow: 0 0 10px #ff7cff;
         transition: transform 0.2s;
     }
@@ -98,6 +147,7 @@
         margin-top: 40px;
         font-size: 28px;
         font-weight: bold;
+        text-align: center;
     }
 
     button {
@@ -110,47 +160,8 @@
         font-size: 26px;
         cursor: pointer;
     }
+
     button:hover { background: #ff2eff; }
-
-    /* Magic blast animation */
-    .blast {
-        position: absolute;
-        width: 150px;
-        height: 150px;
-        background: url('https://i.imgur.com/uP0R0yG.png') center/cover;
-        animation: blastAnim 0.6s forwards;
-        pointer-events: none;
-    }
-
-    @keyframes blastAnim {
-        from { transform: scale(0.3); opacity: 1; }
-        to { transform: scale(1.5); opacity: 0; }
-    }
-
-    /* Monster death explosion */
-    .explode {
-        position: absolute;
-        width: 200px;
-        height: 200px;
-        background: url('https://i.imgur.com/EYlS7rG.png') center/cover;
-        animation: explodeAnim 0.8s forwards;
-    }
-
-    @keyframes explodeAnim {
-        from { opacity: 1; transform: scale(0.8); }
-        to { opacity: 0; transform: scale(1.6); }
-    }
-
-    /* Hero damage flash */
-    #hero.hit {
-        animation: flashRed 0.4s;
-    }
-
-    @keyframes flashRed {
-        0% { filter: brightness(1); }
-        50% { filter: brightness(3) saturate(2); }
-        100% { filter: brightness(1); }
-    }
 
     /* Spell projectile */
     .spell {
@@ -173,12 +184,65 @@
         background: radial-gradient(circle, #66ccff, #0066ff);
         box-shadow: 0 0 25px #33aaff;
     }
+
+    .blast {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        background: url('https://i.imgur.com/uP0R0yG.png') center/cover;
+        animation: blastAnim 0.6s forwards;
+        pointer-events: none;
+    }
+
+    @keyframes blastAnim {
+        from { transform: scale(0.3); opacity: 1; }
+        to { transform: scale(1.5); opacity: 0; }
+    }
+
+    .explode {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        background: url('https://i.imgur.com/EYlS7rG.png') center/cover;
+        animation: explodeAnim 0.8s forwards;
+    }
+
+    @keyframes explodeAnim {
+        from { opacity: 1; transform: scale(0.8); }
+        to { opacity: 0; transform: scale(1.6); }
+    }
+
+    #hero.hit {
+        animation: flashRed 0.4s;
+    }
+
+    @keyframes flashRed {
+        0% { filter: brightness(1); }
+        50% { filter: brightness(3) saturate(2); }
+        100% { filter: brightness(1); }
+    }
 </style>
 </head>
 
 <body>
 
 <h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
+
+<!-- === RANK BAR UI === -->
+<div id="rank-panel">
+    <div id="rank-bar-container">
+        <div id="rank-fill"></div>
+    </div>
+
+    <div id="rank-labels">
+        <div>Grandmaster ✨</div>
+        <div>Archmage 🔮</div>
+        <div>Mage ⚡</div>
+        <div>Adept 📘</div>
+        <div>Apprentice 🌀</div>
+        <div>Novice ⚔️</div>
+    </div>
+</div>
 
 <div id="battlefield">
     <div id="hero" class="character"></div>
@@ -221,6 +285,11 @@ for (let i = 0; i < 30; i++) {
     questions.push({ a, b });
 }
 
+function updateRankBar() {
+    let progress = (score / 30) * 100;
+    document.getElementById("rank-fill").style.height = progress + "%";
+}
+
 function showQuestion() {
     if (current >= questions.length || heroHP <= 0) {
         endGame();
@@ -232,21 +301,7 @@ function showQuestion() {
         `Question ${current + 1}/30:<br>${q.a} × ${q.b} = ?`;
 }
 
-// === Magic blast animation ===
-function magicBlast(targetId) {
-    let target = document.getElementById(targetId);
-    let blast = document.createElement("div");
-    blast.className = "blast";
-
-    let rect = target.getBoundingClientRect();
-    blast.style.left = (rect.left + rect.width/2 - 75) + "px";
-    blast.style.top = (rect.top + rect.height/2 - 75) + "px";
-
-    document.body.appendChild(blast);
-    setTimeout(() => blast.remove(), 600);
-}
-
-// === Projectile spell animation ===
+// === Magic projectile ===
 function castSpell(fromId, toId, isMonster = false) {
     let from = document.getElementById(fromId);
     let to = document.getElementById(toId);
@@ -269,17 +324,26 @@ function castSpell(fromId, toId, isMonster = false) {
             { transform: `translate(0px,0px)` },
             { transform: `translate(${dx}px, ${dy}px)` }
         ],
-        {
-            duration: 500,
-            easing: "linear"
-        }
+        { duration: 500, easing: "linear" }
     );
 
     document.body.appendChild(spell);
     setTimeout(() => spell.remove(), 500);
 }
 
-// === Monster explosion ===
+function magicBlast(targetId) {
+    let target = document.getElementById(targetId);
+    let blast = document.createElement("div");
+    blast.className = "blast";
+
+    let rect = target.getBoundingClientRect();
+    blast.style.left = (rect.left + rect.width/2 - 75) + "px";
+    blast.style.top = (rect.top + rect.height/2 - 75) + "px";
+
+    document.body.appendChild(blast);
+    setTimeout(() => blast.remove(), 600);
+}
+
 function explodeMonster() {
     let target = document.getElementById("monster");
     let boom = document.createElement("div");
@@ -293,7 +357,6 @@ function explodeMonster() {
     setTimeout(() => boom.remove(), 800);
 }
 
-// === Spawn new monster ===
 function spawnMonster() {
     monsterHP = 60;
     document.getElementById("monster-hp").style.width = "100%";
@@ -312,20 +375,20 @@ function submitAnswer() {
         score++;
         streak++;
 
-        // streak damage formula
+        // Update rank bar
+        updateRankBar();
+
         let dmg = 10 + (streak * 5);
         if (dmg > 25) dmg = 25;
 
         monsterHP -= dmg;
 
-        // NEW: projectile from hero to monster
         castSpell("hero", "monster");
         magicBlast("monster");
 
         document.getElementById("log").innerHTML =
             `✨ Correct! You dealt <strong>${dmg}</strong> damage!`;
 
-        // Monster defeated?
         if (monsterHP <= 0) {
             monstersDefeated++;
             explodeMonster();
@@ -337,9 +400,7 @@ function submitAnswer() {
         }
 
     } else {
-        // NEW: projectile from monster to hero
         castSpell("monster", "hero", true);
-
         streak = 0;
         heroHP -= 10;
 
@@ -364,7 +425,6 @@ function submitAnswer() {
     showQuestion();
 }
 
-// ENTER key submits
 document.getElementById("answer").addEventListener("keydown", function(e) {
     if (e.key === "Enter") submitAnswer();
 });
@@ -376,7 +436,7 @@ function endGame() {
     `;
 
     if (score === 30) {
-        finalMsg += `<p>🌟 PERFECT! You conquered ALL monsters of the Arcane Tower! 🌟</p>`;
+        finalMsg += `<p>🌟 PERFECT! You reached <strong>GRANDMASTER</strong> rank! 🌟</p>`;
     }
 
     document.getElementById("results").innerHTML = finalMsg +
@@ -384,6 +444,7 @@ function endGame() {
 }
 
 showQuestion();
+updateRankBar();
 </script>
 
 </body>
