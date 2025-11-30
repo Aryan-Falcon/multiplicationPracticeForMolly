@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -151,6 +151,28 @@
         50% { filter: brightness(3) saturate(2); }
         100% { filter: brightness(1); }
     }
+
+    /* Spell projectile */
+    .spell {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: radial-gradient(circle, #ff88ff, #c200ff);
+        border-radius: 50%;
+        box-shadow: 0 0 25px #ff44ff;
+        pointer-events: none;
+        animation: spellFly 0.5s linear forwards;
+    }
+
+    @keyframes spellFly {
+        from { transform: scale(0.6); opacity: 1; }
+        to { transform: scale(1.2); opacity: 0; }
+    }
+
+    .spell.monster {
+        background: radial-gradient(circle, #66ccff, #0066ff);
+        box-shadow: 0 0 25px #33aaff;
+    }
 </style>
 </head>
 
@@ -224,6 +246,39 @@ function magicBlast(targetId) {
     setTimeout(() => blast.remove(), 600);
 }
 
+// === Projectile spell animation ===
+function castSpell(fromId, toId, isMonster = false) {
+    let from = document.getElementById(fromId);
+    let to = document.getElementById(toId);
+
+    let rect1 = from.getBoundingClientRect();
+    let rect2 = to.getBoundingClientRect();
+
+    let spell = document.createElement("div");
+    spell.className = "spell";
+    if (isMonster) spell.classList.add("monster");
+
+    spell.style.left = (rect1.left + rect1.width/2 - 20) + "px";
+    spell.style.top = (rect1.top + rect1.height/2 - 20) + "px";
+
+    let dx = (rect2.left + rect2.width/2) - (rect1.left + rect1.width/2);
+    let dy = (rect2.top + rect2.height/2) - (rect1.top + rect1.height/2);
+
+    spell.animate(
+        [
+            { transform: `translate(0px,0px)` },
+            { transform: `translate(${dx}px, ${dy}px)` }
+        ],
+        {
+            duration: 500,
+            easing: "linear"
+        }
+    );
+
+    document.body.appendChild(spell);
+    setTimeout(() => spell.remove(), 500);
+}
+
 // === Monster explosion ===
 function explodeMonster() {
     let target = document.getElementById("monster");
@@ -262,6 +317,9 @@ function submitAnswer() {
         if (dmg > 25) dmg = 25;
 
         monsterHP -= dmg;
+
+        // NEW: projectile from hero to monster
+        castSpell("hero", "monster");
         magicBlast("monster");
 
         document.getElementById("log").innerHTML =
@@ -279,6 +337,9 @@ function submitAnswer() {
         }
 
     } else {
+        // NEW: projectile from monster to hero
+        castSpell("monster", "hero", true);
+
         streak = 0;
         heroHP -= 10;
 
