@@ -22,20 +22,6 @@
         text-shadow: 0 0 15px #ff6cff;
     }
 
-    #startMsg {
-        text-align: center;
-        font-size: 26px;
-        margin-top: 15px;
-        color: #ffccff;
-        text-shadow: 0 0 10px #ff88ff;
-        animation: pulse 1.5s infinite alternate;
-    }
-
-    @keyframes pulse {
-        from { opacity: 0.5; }
-        to { opacity: 1; }
-    }
-
     /* === RANK PROGRESS BAR === */
     #rank-panel {
         position: fixed;
@@ -88,7 +74,6 @@
         text-shadow: 0 0 10px #ff8dff;
     }
 
-    /* Battlefield */
     #battlefield {
         margin-top: 40px;
         display: flex;
@@ -187,7 +172,6 @@
 
     button:hover { background: #ff2eff; }
 
-    /* === PARTICLES === */
     .particle {
         position: absolute;
         width: 10px;
@@ -202,7 +186,6 @@
         to { transform: scale(0.1); opacity: 0; }
     }
 
-    /* === SHOCKWAVE === */
     .impact {
         position: absolute;
         width: 140px;
@@ -224,16 +207,13 @@
 
 <h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
 
-<!-- 🔊 AUDIO ENABLE MESSAGE -->
-<div id="startMsg">🔊 Click anywhere to enable sound!</div>
-
-<!-- === SOUND EFFECTS === -->
-<audio id="sfx-correct" src="https://assets.mixkit.co/sfx/preview/mixkit-magical-coin-win-1936.mp3"></audio>
-<audio id="sfx-wrong" src="https://assets.mixkit.co/sfx/preview/mixkit-game-over-trombone-1940.mp3"></audio>
-<audio id="sfx-hero-cast" src="https://assets.mixkit.co/sfx/preview/mixkit-arcane-magic-spell-3290.mp3"></audio>
-<audio id="sfx-monster-cast" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-woosh-1487.mp3"></audio>
-<audio id="sfx-impact" src="https://assets.mixkit.co/sfx/preview/mixkit-quick-magical-sweep-1113.mp3"></audio>
-<audio id="sfx-levelup" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
+<!-- === SOUND EFFECTS (REAL MP3 FILES) === -->
+<audio id="sfx-correct" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8d39aa25b2.mp3"></audio>
+<audio id="sfx-wrong" src="https://cdn.pixabay.com/audio/2022/03/10/audio_f579249e97.mp3"></audio>
+<audio id="sfx-hero-cast" src="https://cdn.pixabay.com/audio/2022/03/15/audio_5fedac2ff1.mp3"></audio>
+<audio id="sfx-monster-cast" src="https://cdn.pixabay.com/audio/2022/03/10/audio_cdb54c0163.mp3"></audio>
+<audio id="sfx-impact" src="https://cdn.pixabay.com/audio/2022/03/10/audio_8ec1d24de2.mp3"></audio>
+<audio id="sfx-levelup" src="https://cdn.pixabay.com/audio/2022/03/10/audio_68f96adab3.mp3"></audio>
 
 <!-- === RANK BAR === -->
 <div id="rank-panel">
@@ -275,36 +255,7 @@
 <div id="results"></div>
 
 <script>
-/* === FORCE AUDIO UNLOCK ON FIRST CLICK === */
-function unlockAudio() {
-    const soundIDs = [
-        "sfx-correct",
-        "sfx-wrong",
-        "sfx-hero-cast",
-        "sfx-monster-cast",
-        "sfx-impact",
-        "sfx-levelup"
-    ];
-
-    soundIDs.forEach(id => {
-        let a = document.getElementById(id);
-        a.volume = 0.0001;
-        a.play().then(() => {
-            a.pause();
-            a.currentTime = 0;
-            a.volume = 1;
-        }).catch(() => {});
-    });
-
-    document.getElementById("startMsg").style.display = "none";
-
-    window.removeEventListener("click", unlockAudio);
-}
-
-window.addEventListener("click", unlockAudio);
-
-
-/* === NORMAL SOUND FUNCTION === */
+/* === SOUND FUNCTION === */
 function playSound(id) {
     const s = document.getElementById(id);
     if (!s) return;
@@ -388,6 +339,7 @@ function randomSpellStyle(isMonster) {
 }
 
 function castSpell(fromId, toId, isMonster = false) {
+
     if (isMonster) playSound("sfx-monster-cast");
     else playSound("sfx-hero-cast");
 
@@ -435,6 +387,7 @@ function castSpell(fromId, toId, isMonster = false) {
         impact.style.top = rect2.top + rect2.height/2 - 70 + "px";
 
         document.body.appendChild(impact);
+
         playSound("sfx-impact");
 
         setTimeout(() => impact.remove(), 400);
@@ -481,7 +434,7 @@ function submitAnswer() {
 
         castSpell("hero", "monster");
 
-        document.getElementById("log").innerHTML =
+        document.getElementById("log").innerHTML = 
             `✨ Correct! You dealt <strong>${dmg}</strong> damage!`;
 
         if (monsterHP <= 0) {
@@ -536,6 +489,7 @@ function endGame() {
 }
 
 showQuestion();
+updateRankBar();
 </script>
 
 </body>
