@@ -22,6 +22,20 @@
         text-shadow: 0 0 15px #ff6cff;
     }
 
+    #startMsg {
+        text-align: center;
+        font-size: 26px;
+        margin-top: 15px;
+        color: #ffccff;
+        text-shadow: 0 0 10px #ff88ff;
+        animation: pulse 1.5s infinite alternate;
+    }
+
+    @keyframes pulse {
+        from { opacity: 0.5; }
+        to { opacity: 1; }
+    }
+
     /* === RANK PROGRESS BAR === */
     #rank-panel {
         position: fixed;
@@ -210,6 +224,9 @@
 
 <h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
 
+<!-- 🔊 AUDIO ENABLE MESSAGE -->
+<div id="startMsg">🔊 Click anywhere to enable sound!</div>
+
 <!-- === SOUND EFFECTS === -->
 <audio id="sfx-correct" src="https://assets.mixkit.co/sfx/preview/mixkit-magical-coin-win-1936.mp3"></audio>
 <audio id="sfx-wrong" src="https://assets.mixkit.co/sfx/preview/mixkit-game-over-trombone-1940.mp3"></audio>
@@ -258,7 +275,36 @@
 <div id="results"></div>
 
 <script>
-/* === SOUND FUNCTION === */
+/* === FORCE AUDIO UNLOCK ON FIRST CLICK === */
+function unlockAudio() {
+    const soundIDs = [
+        "sfx-correct",
+        "sfx-wrong",
+        "sfx-hero-cast",
+        "sfx-monster-cast",
+        "sfx-impact",
+        "sfx-levelup"
+    ];
+
+    soundIDs.forEach(id => {
+        let a = document.getElementById(id);
+        a.volume = 0.0001;
+        a.play().then(() => {
+            a.pause();
+            a.currentTime = 0;
+            a.volume = 1;
+        }).catch(() => {});
+    });
+
+    document.getElementById("startMsg").style.display = "none";
+
+    window.removeEventListener("click", unlockAudio);
+}
+
+window.addEventListener("click", unlockAudio);
+
+
+/* === NORMAL SOUND FUNCTION === */
 function playSound(id) {
     const s = document.getElementById(id);
     if (!s) return;
@@ -275,8 +321,6 @@ let monstersDefeated = 0;
 
 let heroHP = 100;
 let monsterHP = 60;
-
-const ranks = ["Novice", "Apprentice", "Adept", "Mage", "Archmage", "Grandmaster"];
 
 for (let i = 0; i < 30; i++) {
     let a = Math.ceil(Math.random() * 12);
@@ -455,7 +499,6 @@ function submitAnswer() {
 
         castSpell("monster", "hero", true);
 
-        /* === FIXED WRONG ANSWER MESSAGE === */
         document.getElementById("log").innerHTML =
             `❌ Wrong! ${q.a} × ${q.b} = <strong>${correct}</strong>`;
     }
@@ -493,7 +536,6 @@ function endGame() {
 }
 
 showQuestion();
-updateRankBar();
 </script>
 
 </body>
