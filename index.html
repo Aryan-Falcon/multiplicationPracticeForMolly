@@ -5,204 +5,102 @@
 <title>Multiplication RPG — Arcane Tower</title>
 
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Georgia', serif;
-        background: radial-gradient(circle at center, #3a0057, #120018);
-        color: #f8e7ff;
-        overflow-x: hidden;
-    }
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Georgia', serif;
+    background: radial-gradient(circle at center, #3a0057, #120018);
+    color: #f8e7ff;
+}
 
-    h1 {
-        text-align: center;
-        font-size: 42px;
-        margin-top: 20px;
-        color: #ffd6ff;
-        text-shadow: 0 0 15px #ff6cff;
-    }
+h1 {
+    text-align: center;
+    font-size: 42px;
+    margin-top: 20px;
+    color: #ffd6ff;
+    text-shadow: 0 0 15px #ff6cff;
+}
 
-    /* === RANK PROGRESS BAR === */
-    #rank-panel {
-        position: fixed;
-        top: 50px;
-        left: 20px;
-        height: 500px;
-        width: 170px;
-        display: flex;
-        gap: 10px;
-        z-index: 200;
-    }
+#battlefield {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
 
-    #rank-bar-container {
-        width: 25px;
-        height: 500px;
-        background: #2a0038;
-        border: 2px solid #ff9dff;
-        border-radius: 8px;
-        overflow: hidden;
-        position: relative;
-    }
+.character {
+    width: 200px;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+}
 
-    #rank-fill {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        height: 0%;
-        background: linear-gradient(to top, #ff00ff, #ffb7ff);
-        transition: height 0.4s ease-out;
-    }
+#hero {
+    background-image: url('https://i.etsystatic.com/49218806/r/il/141e80/6557512067/il_fullxfull.6557512067_asdh.jpg');
+}
 
-    #rank-labels {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 500px;
-        font-size: 16px;
-        padding-left: 5px;
-    }
+.hp-bar {
+    width: 60%;
+    height: 25px;
+    background: #3a003a;
+    border: 2px solid #ffb7ff;
+    margin: 10px auto;
+}
 
-    .rank {
-        opacity: 0.3;
-        filter: brightness(0.5);
-        transition: all 0.5s;
-    }
+.hp-fill {
+    height: 100%;
+    background: #ff55ff;
+    width: 100%;
+    transition: width 0.5s;
+}
 
-    .rank.active {
-        opacity: 1;
-        filter: brightness(1.8);
-        text-shadow: 0 0 10px #ff8dff;
-    }
+#question-box {
+    margin-top: 30px;
+    font-size: 32px;
+    text-align: center;
+}
 
-    /* Battlefield */
-    #battlefield {
-        margin-top: 40px;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-    }
+input {
+    margin-top: 15px;
+    font-size: 26px;
+    padding: 8px;
+    width: 150px;
+    text-align: center;
+    border-radius: 10px;
+    border: none;
+    display: block;
+    margin: auto;
+}
 
-    .character {
-        width: 200px;
-        height: 200px;
-        background-size: cover;
-    }
+#timer {
+    font-size: 32px;
+    text-align: center;
+    margin-top: 15px;
+    color: #ffb7ff;
+    text-shadow: 0 0 12px #ff6cff;
+}
 
-    #hero {
-        background-image: url('https://i.etsystatic.com/49218806/r/il/141e80/6557512067/il_fullxfull.6557512067_asdh.jpg');
-    }
+#feedback {
+    margin-top: 25px;
+    padding: 20px;
+    font-size: 38px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 15px;
+    display: none;
+}
 
-    #monster {
-        background-image: url('https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg');
-        transition: opacity 0.5s, transform 0.5s;
-    }
+.correct {
+    background: rgba(0,255,150,0.15);
+    border: 3px solid #00ff99;
+    box-shadow: 0 0 25px #00ff99;
+}
 
-    #hp-bars {
-        text-align: center;
-        margin-top: 20px;
-        font-size: 24px;
-    }
-
-    .hp-bar {
-        width: 60%;
-        height: 25px;
-        background: #3a003a;
-        border: 2px solid #ffb7ff;
-        margin: 10px auto;
-    }
-
-    .hp-fill {
-        height: 100%;
-        background: #ff55ff;
-        width: 100%;
-        transition: width 0.5s;
-    }
-
-    #question-box {
-        margin-top: 30px;
-        font-size: 32px;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    input {
-        margin-top: 15px;
-        font-size: 26px;
-        padding: 8px;
-        width: 150px;
-        text-align: center;
-        border-radius: 10px;
-        border: none;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    #log {
-        font-size: 20px;
-        margin-top: 20px;
-        min-height: 60px;
-        text-align: center;
-    }
-
-    #streak-indicator {
-        font-size: 22px;
-        margin-top: 10px;
-        text-align: center;
-        color: #ffd0ff;
-        text-shadow: 0 0 10px #ff7cff;
-    }
-
-    #results {
-        margin-top: 40px;
-        font-size: 28px;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    button {
-        margin-top: 25px;
-        padding: 12px 25px;
-        background: #c200ff;
-        border: none;
-        border-radius: 10px;
-        color: white;
-        font-size: 26px;
-        cursor: pointer;
-    }
-
-    button:hover { background: #ff2eff; }
-
-    /* === PARTICLES === */
-    .particle {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        pointer-events: none;
-        opacity: 1;
-        animation: particleFade 0.6s forwards;
-    }
-
-    @keyframes particleFade {
-        to { transform: scale(0.1); opacity: 0; }
-    }
-
-    /* === SHOCKWAVE === */
-    .impact {
-        position: absolute;
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
-        background: radial-gradient(circle, white, transparent);
-        animation: shockwave 0.4s forwards;
-        pointer-events: none;
-    }
-
-    @keyframes shockwave {
-        from { transform: scale(0.4); opacity: 1; }
-        to { transform: scale(2); opacity: 0; }
-    }
+.wrong {
+    background: rgba(255,0,80,0.15);
+    border: 3px solid #ff3366;
+    box-shadow: 0 0 25px #ff3366;
+}
 </style>
 </head>
 
@@ -210,270 +108,168 @@
 
 <h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
 
-<!-- === SOUND EFFECTS (jsDelivr — working) === -->
-<audio id="sfx-correct" src="https://cdn.jsdelivr.net/gh/jshawl/sfx/collect.mp3"></audio>
-<audio id="sfx-wrong" src="https://cdn.jsdelivr.net/gh/jshawl/sfx/error.mp3"></audio>
-<audio id="sfx-hero-cast" src="https://cdn.jsdelivr.net/gh/jshawl/sfx/whoosh.mp3"></audio>
-<audio id="sfx-monster-cast" src="https://cdn.jsdelivr.net/gh/jshawl/sfx/whoosh.mp3"></audio>
-<audio id="sfx-impact" src="https://cdn.jsdelivr.net/gh/jshawl/sfx/explosion.mp3"></audio>
-<audio id="sfx-levelup" src="https://cdn.jsdelivr.net/gh/jshawl/sfx/powerup.mp3"></audio>
-
-<!-- === BUTTON TO UNLOCK AUDIO ON CHROME === -->
-<button id="unlockAudio"
- style="position:fixed;top:20px;right:20px;font-size:20px;z-index:9999;">
-🔊 Enable Sound
-</button>
-
-<div id="rank-panel">
-    <div id="rank-bar-container">
-        <div id="rank-fill"></div>
-    </div>
-
-    <div id="rank-labels">
-        <div class="rank" id="rank6">Grandmaster ✨</div>
-        <div class="rank" id="rank5">Archmage 🔮</div>
-        <div class="rank" id="rank4">Mage ⚡</div>
-        <div class="rank" id="rank3">Adept 📘</div>
-        <div class="rank" id="rank2">Apprentice 🌀</div>
-        <div class="rank" id="rank1">Novice ⚔️</div>
-    </div>
-</div>
-
 <div id="battlefield">
     <div id="hero" class="character"></div>
     <div id="monster" class="character"></div>
 </div>
 
-<div id="hp-bars">
+<div style="text-align:center;">
     Hero HP
     <div class="hp-bar"><div id="hero-hp" class="hp-fill"></div></div>
-
     Monster HP
     <div class="hp-bar"><div id="monster-hp" class="hp-fill"></div></div>
 </div>
 
-<div id="streak-indicator">Streak: 0</div>
-
+<div id="timer">⏳ Time: 16</div>
 <div id="question-box"></div>
-
-<input type="number" id="answer" placeholder="Press ENTER">
-
-<div id="log"></div>
-
-<div id="results"></div>
+<input id="answer" type="number" placeholder="ENTER">
+<div id="feedback"></div>
 
 <script>
-let audioUnlocked = false;
-
-function unlockAllAudio() {
-    if (audioUnlocked) return;
-
-    const sounds = document.querySelectorAll("audio");
-    sounds.forEach(a => {
-        a.play().then(() => {
-            a.pause();
-            a.currentTime = 0;
-        }).catch(() => {});
-    });
-
-    audioUnlocked = true;
-    document.getElementById("unlockAudio").style.display = "none";
-}
-
-document.getElementById("unlockAudio").addEventListener("click", unlockAllAudio);
-
-function playSound(id) {
-    if (!audioUnlocked) return;
-    const a = document.getElementById(id);
-    if (!a) return;
-    a.currentTime = 0;
-    a.play();
-}
-
-/* GAME VARIABLES */
+/* ================= GAME STATE ================= */
 let questions = [];
 let current = 0;
-let score = 0;
-let streak = 0;
 let monstersDefeated = 0;
 
 let heroHP = 100;
 let monsterHP = 60;
 
+/* TIMER */
+const FIXED_TIME = 16;
+let timeLeft = FIXED_TIME;
+let timerInterval;
+
+/* DAMAGE */
+let baseMonsterDamage = 10;
+let monsterScaling = 5;
+
+/* MONSTER IMAGES */
+const monsterImages = {
+    1: "https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
+    2: "https://i.pinimg.com/originals/12/74/5e/12745ef0d668ea915bc5cb4a6223e643.jpg",
+    3: "https://i.pinimg.com/564x/bc/92/9a/bc929acfd5d867c805c06dbe8b05855c.jpg",
+    4: "https://koboldpress.com/wp-content/uploads/2013/02/ghost_goblin_by_chrismcfann.jpg",
+    5: "https://i.pinimg.com/474x/c8/51/9c/c8519ce4a412892d327c7671c1f30bc3.jpg",
+    6: "https://static.wikia.nocookie.net/rpgtalk/images/e/e0/IronGolemDNDB.jpeg/revision/latest/smart/width/250/height/250?cb=20200808102122",
+    7: "https://i.pinimg.com/474x/76/47/77/7647777b090a764468351b91061db6f4.jpg",
+    8: "https://img.freepik.com/free-photo/literary-fantasy-character_23-2151863447.jpg?semt=ais_hybrid&w=740&q=80",
+    9: "https://i.pinimg.com/474x/c8/51/9c/c8519ce4a412892d327c7671c1f30bc3.jpg",
+    10: "https://img.freepik.com/premium-photo/close-up-monster-with-purple-face-purple-body-generative-ai_974533-21727.jpg?semt=ais_hybrid&w=740&q=80"
+};
+
+/* QUESTIONS */
 for (let i = 0; i < 30; i++) {
     let a = Math.ceil(Math.random() * 12);
     let b = Math.ceil(Math.random() * 12);
     questions.push({ a, b });
 }
 
-function updateRankBar() {
-    let progress = (score / 30) * 100;
-    document.getElementById("rank-fill").style.height = progress + "%";
+/* TIMER */
+function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = FIXED_TIME;
+    updateTimer();
 
-    let level = 1;
-    if (score === 30) level = 6;
-    else if (score >= 25) level = 5;
-    else if (score >= 20) level = 4;
-    else if (score >= 15) level = 3;
-    else if (score >= 10) level = 2;
-
-    for (let i = 1; i <= 6; i++) {
-        let label = document.getElementById("rank" + i);
-        if (i <= level) {
-            if (!label.classList.contains("active")) playSound("sfx-levelup");
-            label.classList.add("active");
-        } else {
-            label.classList.remove("active");
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            monsterAttack("⏰ Time's up!");
         }
-    }
+    }, 1000);
 }
 
-/* SPELL STYLE */
-function randomSpellStyle(isMonster) {
-    const styles = ["arcane", "fire", "lightning", "chaos"];
-    let type = styles[Math.floor(Math.random() * styles.length)];
-    let spell = document.createElement("div");
-    spell.style.position = "absolute";
-    spell.style.width = "55px";
-    spell.style.height = "55px";
-    spell.style.borderRadius = "50%";
-    spell.style.pointerEvents = "none";
-
-    if (type === "arcane") spell.style.background = "radial-gradient(circle, white, #ff99ff, #9900cc)";
-    if (type === "fire") spell.style.background = "radial-gradient(circle, white, #ff9900, #cc0000)";
-    if (type === "lightning") spell.style.background = "radial-gradient(circle, white, #99ccff, #0044ff)";
-    if (type === "chaos") spell.style.background = "radial-gradient(circle, white, #ff00ff, #00ffff, #ff3300)";
-
-    if (isMonster) spell.style.background = "radial-gradient(circle, white, #66ccff, #0044ff)";
-
-    spell.style.boxShadow = "0 0 25px #ff66ff, 0 0 50px #cc00ff";
-
-    return spell;
+function updateTimer() {
+    document.getElementById("timer").innerHTML = `⏳ Time: ${timeLeft}`;
 }
 
-function castSpell(fromId, toId, isMonster=false) {
-    if (isMonster) playSound("sfx-monster-cast");
-    else playSound("sfx-hero-cast");
-
-    let from = document.getElementById(fromId);
-    let to = document.getElementById(toId);
-    let rect1 = from.getBoundingClientRect();
-    let rect2 = to.getBoundingClientRect();
-    let spell = randomSpellStyle(isMonster);
-
-    spell.style.left = rect1.left + rect1.width/2 - 25 + "px";
-    spell.style.top = rect1.top + rect1.height/2 - 25 + "px";
-
-    document.body.appendChild(spell);
-
-    let particles = setInterval(() => {
-        let p = document.createElement("div");
-        p.className = "particle";
-        p.style.left = spell.getBoundingClientRect().left + 20 + "px";
-        p.style.top = spell.getBoundingClientRect().top + 20 + "px";
-        p.style.background = spell.style.background;
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 600);
-    }, 40);
-
-    let dx = rect2.left + rect2.width/2 - (rect1.left + rect1.width/2);
-    let dy = rect2.top + rect2.height/2 - (rect1.top + rect1.height/2);
-
-    spell.animate([{ transform: "translate(0,0)" }, { transform: `translate(${dx}px,${dy}px)` }], { duration:700, easing:"ease-out" });
-
-    setTimeout(() => {
-        clearInterval(particles);
-        spell.remove();
-
-        let impact = document.createElement("div");
-        impact.className = "impact";
-        impact.style.left = rect2.left + rect2.width/2 - 70 + "px";
-        impact.style.top = rect2.top + rect2.height/2 - 70 + "px";
-        document.body.appendChild(impact);
-
-        playSound("sfx-impact");
-
-        setTimeout(() => impact.remove(), 400);
-    },700);
+/* FEEDBACK */
+function showFeedback(text, correct) {
+    let box = document.getElementById("feedback");
+    box.className = correct ? "correct" : "wrong";
+    box.innerHTML = text;
+    box.style.display = "block";
+    setTimeout(() => box.style.display = "none", 1600);
 }
 
+/* GAME */
 function showQuestion() {
-    if (current >= 30 || heroHP <=0) return endGame();
+    if (current >= 30 || heroHP <= 0) return endGame();
     let q = questions[current];
-    document.getElementById("question-box").innerHTML = `Question ${current+1}/30:<br>${q.a} × ${q.b} = ?`;
+    document.getElementById("question-box").innerHTML = `${q.a} × ${q.b} = ?`;
 }
 
 function spawnMonster() {
     monsterHP = 60;
     document.getElementById("monster-hp").style.width = "100%";
-    let mon = document.getElementById("monster");
-    mon.style.opacity = 1;
-    mon.style.transform = "scale(1)";
+
+    let monsterNum = monstersDefeated + 1;
+    let monster = document.getElementById("monster");
+    monster.style.backgroundImage =
+        `url('${monsterImages[monsterNum] || monsterImages[1]}')`;
+
+    startTimer();
+}
+
+function monsterAttack(reason) {
+    let dmg = baseMonsterDamage + monstersDefeated * monsterScaling;
+    heroHP -= dmg;
+
+    let q = questions[current];
+    showFeedback(
+        `${reason}<br>${q.a} × ${q.b} = ${q.a * q.b}<br>💥 Monster dealt ${dmg} damage`,
+        false
+    );
+
+    document.getElementById("hero-hp").style.width = heroHP + "%";
+    current++;
+    showQuestion();
+    startTimer();
 }
 
 function submitAnswer() {
+    clearInterval(timerInterval);
     let input = document.getElementById("answer");
-    let userAnswer = Number(input.value);
     let q = questions[current];
     let correct = q.a * q.b;
 
-    if (userAnswer === correct) {
-        playSound("sfx-correct");
-        score++;
-        streak++;
-        updateRankBar();
+    if (Number(input.value) === correct) {
+        monsterHP -= 15;
+        showFeedback(`✅ Correct!<br>${q.a} × ${q.b} = ${correct}`, true);
 
-        let dmg = 10 + streak*5; if (dmg>25) dmg=25;
-        monsterHP -= dmg;
-
-        castSpell("hero","monster");
-        document.getElementById("log").innerHTML = `✨ Correct! You dealt <strong>${dmg}</strong> damage!`;
-
-        if (monsterHP <=0) {
+        if (monsterHP <= 0) {
             monstersDefeated++;
-            document.getElementById("log").innerHTML += "<br>💥 Monster defeated!";
-            setTimeout(spawnMonster,700);
+            spawnMonster();
         }
-
     } else {
-        playSound("sfx-wrong");
-        streak=0;
-        heroHP -=10;
-        castSpell("monster","hero",true);
-        document.getElementById("log").innerHTML = `❌ Wrong! ${q.a} × ${q.b} = <strong>${correct}</strong>`;
+        monsterAttack("❌ Wrong!");
+        return;
     }
 
-    document.getElementById("hero-hp").style.width = heroHP + "%";
     document.getElementById("monster-hp").style.width = monsterHP + "%";
-    document.getElementById("streak-indicator").innerHTML = `Streak: ${streak}`;
-
     input.value = "";
     current++;
     showQuestion();
+    startTimer();
 }
 
-document.getElementById("answer").addEventListener("keydown", e=>{ if(e.key==="Enter") submitAnswer(); });
-
 function endGame() {
-    let finalRank="";
-    if(score===30) finalRank="Grandmaster";
-    else if(score>=25) finalRank="Archmage";
-    else if(score>=20) finalRank="Mage";
-    else if(score>=15) finalRank="Adept";
-    else if(score>=10) finalRank="Apprentice";
-    else finalRank="Novice";
-
-    document.getElementById("results").innerHTML = `
-        <p>You defeated <strong>${monstersDefeated}</strong> monsters!</p>
-        <p>Your Score: <strong>${score}/30</strong></p>
-        <p>Your Final Rank: <strong>${finalRank}</strong> 🏆</p>
+    document.body.innerHTML = `
+        <h1>Game Over</h1>
+        <p style="text-align:center;">Monsters defeated: ${monstersDefeated}</p>
         <button onclick="location.reload()">Play Again</button>
     `;
 }
 
-showQuestion();
-updateRankBar();
+document.getElementById("answer").addEventListener("keydown", e => {
+    if (e.key === "Enter") submitAnswer();
+});
+
+/* START */
 spawnMonster();
+showQuestion();
+document.getElementById("hero-hp").style.width = heroHP + "%";
 </script>
 
 </body>
