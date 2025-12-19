@@ -19,7 +19,7 @@ h1 {
     text-shadow: 0 0 15px #ff6cff;
 }
 
-/* === RANK BAR === */
+/* ===== RANK BAR ===== */
 #rank-panel {
     position: fixed;
     top: 100px;
@@ -29,6 +29,7 @@ h1 {
 }
 
 #rank-bar {
+    position: relative;
     width: 25px;
     height: 300px;
     background: #2a0038;
@@ -38,10 +39,12 @@ h1 {
 }
 
 #rank-fill {
+    position: absolute;
+    bottom: 0;
     width: 100%;
     height: 0%;
     background: linear-gradient(to top, #ff00ff, #ffb7ff);
-    transition: height 0.4s;
+    transition: height 0.4s ease-out;
 }
 
 #rank-labels {
@@ -57,10 +60,10 @@ h1 {
 
 .rank.active {
     opacity: 1;
-    text-shadow: 0 0 8px #ff9dff;
+    text-shadow: 0 0 10px #ff9dff;
 }
 
-/* === BATTLEFIELD === */
+/* ===== BATTLEFIELD ===== */
 #battlefield {
     margin-top: 40px;
     display: flex;
@@ -143,7 +146,9 @@ input {
 <h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
 
 <div id="rank-panel">
-    <div id="rank-bar"><div id="rank-fill"></div></div>
+    <div id="rank-bar">
+        <div id="rank-fill"></div>
+    </div>
     <div id="rank-labels">
         <div class="rank" id="r6">Grandmaster</div>
         <div class="rank" id="r5">Archmage</div>
@@ -175,9 +180,11 @@ input {
 let questions=[], current=0, score=0, streak=0, monstersDefeated=0;
 let heroHP=100, monsterHP=60;
 
-const FIXED_TIME=16, WRONG_DELAY=4000;
+const FIXED_TIME=16;
+const WRONG_DELAY=4000;
 let timeLeft, timer;
 
+/* Monster images */
 const monsterImages = {
 1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
 2:"https://i.pinimg.com/originals/12/74/5e/12745ef0d668ea915bc5cb4a6223e643.jpg",
@@ -191,6 +198,7 @@ const monsterImages = {
 10:"https://img.freepik.com/premium-photo/close-up-monster-with-purple-face-purple-body-generative-ai_974533-21727.jpg"
 };
 
+/* Generate questions */
 for(let i=0;i<30;i++){
     questions.push({
         a:Math.ceil(Math.random()*12),
@@ -198,15 +206,17 @@ for(let i=0;i<30;i++){
     });
 }
 
+/* Rank update */
 function updateRank(){
-    let pct = (score/30)*100;
+    let pct=(score/30)*100;
     document.getElementById("rank-fill").style.height=pct+"%";
-    let level = score>=25?6:score>=20?5:score>=15?4:score>=10?3:score>=5?2:1;
+    let level=score>=25?6:score>=20?5:score>=15?4:score>=10?3:score>=5?2:1;
     for(let i=1;i<=6;i++){
         document.getElementById("r"+i).classList.toggle("active",i<=level);
     }
 }
 
+/* Timer */
 function startTimer(){
     clearInterval(timer);
     timeLeft=FIXED_TIME;
@@ -214,10 +224,14 @@ function startTimer(){
     timer=setInterval(()=>{
         timeLeft--;
         document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
-        if(timeLeft<=0){ clearInterval(timer); monsterAttack("⏰ Time's up!"); }
+        if(timeLeft<=0){
+            clearInterval(timer);
+            monsterAttack("⏰ Time's up!");
+        }
     },1000);
 }
 
+/* Game flow */
 function spawnMonster(){
     monsterHP=60;
     document.getElementById("monster-hp").style.width="100%";
@@ -232,10 +246,10 @@ function showQuestion(){
     document.getElementById("question-box").innerText=`${q.a} × ${q.b} = ?`;
 }
 
-function showFeedback(msg,type){
+function showFeedback(text,type){
     let f=document.getElementById("feedback");
     f.className=type;
-    f.innerHTML=msg;
+    f.innerHTML=text;
     f.style.display="block";
 }
 
@@ -245,7 +259,12 @@ function monsterAttack(reason){
     let q=questions[current];
     showFeedback(`${reason}<br>${q.a} × ${q.b} = ${q.a*q.b}`,"wrong");
     document.getElementById("hero-hp").style.width=heroHP+"%";
-    setTimeout(()=>{ document.getElementById("feedback").style.display="none"; current++; showQuestion(); startTimer(); },WRONG_DELAY);
+    setTimeout(()=>{
+        document.getElementById("feedback").style.display="none";
+        current++;
+        showQuestion();
+        startTimer();
+    },WRONG_DELAY);
 }
 
 function submitAnswer(){
@@ -261,20 +280,30 @@ function submitAnswer(){
         showFeedback(`✅ Correct!<br>Damage: ${dmg}`,"correct");
         setTimeout(()=>{
             document.getElementById("feedback").style.display="none";
-            if(monsterHP<=0){ monstersDefeated++; spawnMonster(); }
+            if(monsterHP<=0){
+                monstersDefeated++;
+                spawnMonster();
+            }
             document.getElementById("monster-hp").style.width=monsterHP+"%";
-            current++; showQuestion(); startTimer();
+            current++;
+            showQuestion();
+            startTimer();
         },1200);
-    } else monsterAttack("❌ Wrong!");
+    } else {
+        monsterAttack("❌ Wrong!");
+    }
     answer.value="";
 }
 
 function endGame(){
-    document.body.innerHTML=`<h1>Game Over</h1><p>Monsters defeated: ${monstersDefeated}</p>`;
+    document.body.innerHTML=`<h1>Game Over</h1><p style="text-align:center">Monsters defeated: ${monstersDefeated}</p>`;
 }
 
-answer.addEventListener("keydown",e=>{ if(e.key==="Enter") submitAnswer(); });
+answer.addEventListener("keydown",e=>{
+    if(e.key==="Enter") submitAnswer();
+});
 
+/* Start game */
 spawnMonster();
 showQuestion();
 document.getElementById("hero-hp").style.width="100%";
