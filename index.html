@@ -7,7 +7,6 @@
 <style>
 body {
     margin: 0;
-    padding: 0;
     font-family: 'Georgia', serif;
     background: radial-gradient(circle at center, #3a0057, #120018);
     color: #f8e7ff;
@@ -17,10 +16,51 @@ h1 {
     text-align: center;
     font-size: 42px;
     margin-top: 20px;
-    color: #ffd6ff;
     text-shadow: 0 0 15px #ff6cff;
 }
 
+/* === RANK BAR === */
+#rank-panel {
+    position: fixed;
+    top: 100px;
+    left: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+#rank-bar {
+    width: 25px;
+    height: 300px;
+    background: #2a0038;
+    border: 2px solid #ff9dff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#rank-fill {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, #ff00ff, #ffb7ff);
+    transition: height 0.4s;
+}
+
+#rank-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 300px;
+}
+
+.rank {
+    opacity: 0.3;
+}
+
+.rank.active {
+    opacity: 1;
+    text-shadow: 0 0 8px #ff9dff;
+}
+
+/* === BATTLEFIELD === */
 #battlefield {
     margin-top: 40px;
     display: flex;
@@ -29,19 +69,20 @@ h1 {
 }
 
 .character {
-    width: 200px;
-    height: 200px;
-    background-size: cover;
+    width: 230px;
+    height: 230px;
+    background-size: contain;
+    background-repeat: no-repeat;
     background-position: center;
 }
 
 #hero {
-    background-image: url('https://i.etsystatic.com/49218806/r/il/141e80/6557512067/il_fullxfull.6557512067_asdh.jpg');
+    background-image: url("https://i.etsystatic.com/49218806/r/il/141e80/6557512067/il_fullxfull.6557512067_asdh.jpg");
 }
 
 .hp-bar {
     width: 60%;
-    height: 25px;
+    height: 22px;
     background: #3a003a;
     border: 2px solid #ffb7ff;
     margin: 10px auto;
@@ -54,52 +95,45 @@ h1 {
     transition: width 0.5s;
 }
 
+#timer {
+    text-align: center;
+    font-size: 30px;
+    margin-top: 10px;
+}
+
 #question-box {
-    margin-top: 30px;
     font-size: 32px;
     text-align: center;
+    margin-top: 20px;
 }
 
 input {
-    margin-top: 15px;
     font-size: 26px;
     padding: 8px;
     width: 150px;
-    text-align: center;
+    display: block;
+    margin: 15px auto;
     border-radius: 10px;
     border: none;
-    display: block;
-    margin: auto;
-}
-
-#timer {
-    font-size: 32px;
-    text-align: center;
-    margin-top: 15px;
-    color: #ffb7ff;
-    text-shadow: 0 0 12px #ff6cff;
 }
 
 #feedback {
-    margin-top: 25px;
-    padding: 20px;
-    font-size: 38px;
-    font-weight: bold;
+    font-size: 36px;
     text-align: center;
-    border-radius: 15px;
+    padding: 18px;
+    margin-top: 15px;
     display: none;
+    border-radius: 15px;
 }
 
 .correct {
     background: rgba(0,255,150,0.15);
     border: 3px solid #00ff99;
-    box-shadow: 0 0 25px #00ff99;
 }
 
 .wrong {
     background: rgba(255,0,80,0.15);
     border: 3px solid #ff3366;
-    box-shadow: 0 0 25px #ff3366;
 }
 </style>
 </head>
@@ -108,12 +142,24 @@ input {
 
 <h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
 
+<div id="rank-panel">
+    <div id="rank-bar"><div id="rank-fill"></div></div>
+    <div id="rank-labels">
+        <div class="rank" id="r6">Grandmaster</div>
+        <div class="rank" id="r5">Archmage</div>
+        <div class="rank" id="r4">Mage</div>
+        <div class="rank" id="r3">Adept</div>
+        <div class="rank" id="r2">Apprentice</div>
+        <div class="rank" id="r1">Novice</div>
+    </div>
+</div>
+
 <div id="battlefield">
     <div id="hero" class="character"></div>
     <div id="monster" class="character"></div>
 </div>
 
-<div style="text-align:center;">
+<div style="text-align:center">
     Hero HP
     <div class="hp-bar"><div id="hero-hp" class="hp-fill"></div></div>
     Monster HP
@@ -126,150 +172,112 @@ input {
 <div id="feedback"></div>
 
 <script>
-/* ================= GAME STATE ================= */
-let questions = [];
-let current = 0;
-let monstersDefeated = 0;
+let questions=[], current=0, score=0, streak=0, monstersDefeated=0;
+let heroHP=100, monsterHP=60;
 
-let heroHP = 100;
-let monsterHP = 60;
+const FIXED_TIME=16, WRONG_DELAY=4000;
+let timeLeft, timer;
 
-/* TIMER */
-const FIXED_TIME = 16;
-let timeLeft = FIXED_TIME;
-let timerInterval;
-
-/* DAMAGE */
-let baseMonsterDamage = 10;
-let monsterScaling = 5;
-
-/* MONSTER IMAGES */
 const monsterImages = {
-    1: "https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
-    2: "https://i.pinimg.com/originals/12/74/5e/12745ef0d668ea915bc5cb4a6223e643.jpg",
-    3: "https://i.pinimg.com/564x/bc/92/9a/bc929acfd5d867c805c06dbe8b05855c.jpg",
-    4: "https://koboldpress.com/wp-content/uploads/2013/02/ghost_goblin_by_chrismcfann.jpg",
-    5: "https://i.pinimg.com/474x/c8/51/9c/c8519ce4a412892d327c7671c1f30bc3.jpg",
-    6: "https://static.wikia.nocookie.net/rpgtalk/images/e/e0/IronGolemDNDB.jpeg/revision/latest/smart/width/250/height/250?cb=20200808102122",
-    7: "https://i.pinimg.com/474x/76/47/77/7647777b090a764468351b91061db6f4.jpg",
-    8: "https://img.freepik.com/free-photo/literary-fantasy-character_23-2151863447.jpg?semt=ais_hybrid&w=740&q=80",
-    9: "https://i.pinimg.com/474x/c8/51/9c/c8519ce4a412892d327c7671c1f30bc3.jpg",
-    10: "https://img.freepik.com/premium-photo/close-up-monster-with-purple-face-purple-body-generative-ai_974533-21727.jpg?semt=ais_hybrid&w=740&q=80"
+1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
+2:"https://i.pinimg.com/originals/12/74/5e/12745ef0d668ea915bc5cb4a6223e643.jpg",
+3:"https://i.pinimg.com/564x/bc/92/9a/bc929acfd5d867c805c06dbe8b05855c.jpg",
+4:"https://koboldpress.com/wp-content/uploads/2013/02/ghost_goblin_by_chrismcfann.jpg",
+5:"https://i.pinimg.com/474x/c8/51/9c/c8519ce4a412892d327c7671c1f30bc3.jpg",
+6:"https://static.wikia.nocookie.net/rpgtalk/images/e/e0/IronGolemDNDB.jpeg",
+7:"https://i.pinimg.com/474x/76/47/77/7647777b090a764468351b91061db6f4.jpg",
+8:"https://img.freepik.com/free-photo/literary-fantasy-character_23-2151863447.jpg",
+9:"https://i.pinimg.com/474x/c8/51/9c/c8519ce4a412892d327c7671c1f30bc3.jpg",
+10:"https://img.freepik.com/premium-photo/close-up-monster-with-purple-face-purple-body-generative-ai_974533-21727.jpg"
 };
 
-/* QUESTIONS */
-for (let i = 0; i < 30; i++) {
-    let a = Math.ceil(Math.random() * 12);
-    let b = Math.ceil(Math.random() * 12);
-    questions.push({ a, b });
+for(let i=0;i<30;i++){
+    questions.push({
+        a:Math.ceil(Math.random()*12),
+        b:Math.ceil(Math.random()*12)
+    });
 }
 
-/* TIMER */
-function startTimer() {
-    clearInterval(timerInterval);
-    timeLeft = FIXED_TIME;
-    updateTimer();
-
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimer();
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            monsterAttack("⏰ Time's up!");
-        }
-    }, 1000);
-}
-
-function updateTimer() {
-    document.getElementById("timer").innerHTML = `⏳ Time: ${timeLeft}`;
-}
-
-/* FEEDBACK */
-function showFeedback(text, correct) {
-    let box = document.getElementById("feedback");
-    box.className = correct ? "correct" : "wrong";
-    box.innerHTML = text;
-    box.style.display = "block";
-    setTimeout(() => box.style.display = "none", 1600);
-}
-
-/* GAME */
-function showQuestion() {
-    if (current >= 30 || heroHP <= 0) return endGame();
-    let q = questions[current];
-    document.getElementById("question-box").innerHTML = `${q.a} × ${q.b} = ?`;
-}
-
-function spawnMonster() {
-    monsterHP = 60;
-    document.getElementById("monster-hp").style.width = "100%";
-
-    let monsterNum = monstersDefeated + 1;
-    let monster = document.getElementById("monster");
-    monster.style.backgroundImage =
-        `url('${monsterImages[monsterNum] || monsterImages[1]}')`;
-
-    startTimer();
-}
-
-function monsterAttack(reason) {
-    let dmg = baseMonsterDamage + monstersDefeated * monsterScaling;
-    heroHP -= dmg;
-
-    let q = questions[current];
-    showFeedback(
-        `${reason}<br>${q.a} × ${q.b} = ${q.a * q.b}<br>💥 Monster dealt ${dmg} damage`,
-        false
-    );
-
-    document.getElementById("hero-hp").style.width = heroHP + "%";
-    current++;
-    showQuestion();
-    startTimer();
-}
-
-function submitAnswer() {
-    clearInterval(timerInterval);
-    let input = document.getElementById("answer");
-    let q = questions[current];
-    let correct = q.a * q.b;
-
-    if (Number(input.value) === correct) {
-        monsterHP -= 15;
-        showFeedback(`✅ Correct!<br>${q.a} × ${q.b} = ${correct}`, true);
-
-        if (monsterHP <= 0) {
-            monstersDefeated++;
-            spawnMonster();
-        }
-    } else {
-        monsterAttack("❌ Wrong!");
-        return;
+function updateRank(){
+    let pct = (score/30)*100;
+    document.getElementById("rank-fill").style.height=pct+"%";
+    let level = score>=25?6:score>=20?5:score>=15?4:score>=10?3:score>=5?2:1;
+    for(let i=1;i<=6;i++){
+        document.getElementById("r"+i).classList.toggle("active",i<=level);
     }
+}
 
-    document.getElementById("monster-hp").style.width = monsterHP + "%";
-    input.value = "";
-    current++;
-    showQuestion();
+function startTimer(){
+    clearInterval(timer);
+    timeLeft=FIXED_TIME;
+    document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
+    timer=setInterval(()=>{
+        timeLeft--;
+        document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
+        if(timeLeft<=0){ clearInterval(timer); monsterAttack("⏰ Time's up!"); }
+    },1000);
+}
+
+function spawnMonster(){
+    monsterHP=60;
+    document.getElementById("monster-hp").style.width="100%";
+    document.getElementById("monster").style.backgroundImage=
+        `url('${monsterImages[monstersDefeated+1]||monsterImages[1]}')`;
     startTimer();
 }
 
-function endGame() {
-    document.body.innerHTML = `
-        <h1>Game Over</h1>
-        <p style="text-align:center;">Monsters defeated: ${monstersDefeated}</p>
-        <button onclick="location.reload()">Play Again</button>
-    `;
+function showQuestion(){
+    if(current>=30||heroHP<=0) return endGame();
+    let q=questions[current];
+    document.getElementById("question-box").innerText=`${q.a} × ${q.b} = ?`;
 }
 
-document.getElementById("answer").addEventListener("keydown", e => {
-    if (e.key === "Enter") submitAnswer();
-});
+function showFeedback(msg,type){
+    let f=document.getElementById("feedback");
+    f.className=type;
+    f.innerHTML=msg;
+    f.style.display="block";
+}
 
-/* START */
+function monsterAttack(reason){
+    streak=0;
+    heroHP-=10+monstersDefeated*5;
+    let q=questions[current];
+    showFeedback(`${reason}<br>${q.a} × ${q.b} = ${q.a*q.b}`,"wrong");
+    document.getElementById("hero-hp").style.width=heroHP+"%";
+    setTimeout(()=>{ document.getElementById("feedback").style.display="none"; current++; showQuestion(); startTimer(); },WRONG_DELAY);
+}
+
+function submitAnswer(){
+    clearInterval(timer);
+    let q=questions[current];
+    let correct=q.a*q.b;
+    if(Number(answer.value)===correct){
+        streak++;
+        score++;
+        updateRank();
+        let dmg=Math.min(10+streak*4,35);
+        monsterHP-=dmg;
+        showFeedback(`✅ Correct!<br>Damage: ${dmg}`,"correct");
+        setTimeout(()=>{
+            document.getElementById("feedback").style.display="none";
+            if(monsterHP<=0){ monstersDefeated++; spawnMonster(); }
+            document.getElementById("monster-hp").style.width=monsterHP+"%";
+            current++; showQuestion(); startTimer();
+        },1200);
+    } else monsterAttack("❌ Wrong!");
+    answer.value="";
+}
+
+function endGame(){
+    document.body.innerHTML=`<h1>Game Over</h1><p>Monsters defeated: ${monstersDefeated}</p>`;
+}
+
+answer.addEventListener("keydown",e=>{ if(e.key==="Enter") submitAnswer(); });
+
 spawnMonster();
 showQuestion();
-document.getElementById("hero-hp").style.width = heroHP + "%";
+document.getElementById("hero-hp").style.width="100%";
 </script>
 
 </body>
