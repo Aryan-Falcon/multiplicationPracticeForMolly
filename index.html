@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Multiplication RPG — Arcane Tower</title>
+
 <style>
 body {
     margin: 0;
@@ -53,10 +54,7 @@ h1 {
     height: 300px;
 }
 
-.rank {
-    opacity: 0.3;
-}
-
+.rank { opacity: 0.3; }
 .rank.active {
     opacity: 1;
     text-shadow: 0 0 10px #ff9dff;
@@ -145,9 +143,7 @@ input {
 <h1>⚔️ Multiplication RPG: Arcane Tower ⚔️</h1>
 
 <div id="rank-panel">
-    <div id="rank-bar">
-        <div id="rank-fill"></div>
-    </div>
+    <div id="rank-bar"><div id="rank-fill"></div></div>
     <div id="rank-labels">
         <div class="rank" id="r6">Grandmaster</div>
         <div class="rank" id="r5">Archmage</div>
@@ -176,10 +172,10 @@ input {
 <div id="feedback"></div>
 
 <script>
-let questions=[], current=0, score=0, streak=0, monstersDefeated=0;
-let heroHP=100, monsterHP=60;
-const FIXED_TIME=16;
-const WRONG_DELAY=4000;
+let questions = [], current = 0, score = 0, streak = 0, monstersDefeated = 0;
+let heroHP = 100, monsterHP = 60;
+const FIXED_TIME = 16;
+const WRONG_DELAY = 4000;
 let timeLeft, timer;
 
 const monsterImages = {
@@ -196,119 +192,137 @@ const monsterImages = {
 };
 
 /* Generate questions */
-for(let i=0;i<30;i++){
+for (let i = 0; i < 30; i++) {
     questions.push({
-        a:Math.ceil(Math.random()*12),
-        b:Math.ceil(Math.random()*12)
+        a: Math.ceil(Math.random() * 12),
+        b: Math.ceil(Math.random() * 12)
     });
 }
 
 /* Rank update */
-function updateRank(){
-    let pct=(score/current)*100 || 0;
-    document.getElementById("rank-fill").style.height=pct+"%";
-    let accuracy = score/current || 0;
-    let level=accuracy>=1?6:accuracy>=0.83?5:accuracy>=0.66?4:accuracy>=0.5?3:accuracy>=0.33?2:1;
-    for(let i=1;i<=6;i++){
-        document.getElementById("r"+i).classList.toggle("active",i<=level);
+function updateRank() {
+    let accuracy = current === 0 ? 0 : score / current;
+    if (accuracy > 1) accuracy = 1;
+
+    document.getElementById("rank-fill").style.height = (accuracy * 100) + "%";
+
+    let level =
+        accuracy >= 0.999 ? 6 :
+        accuracy >= 0.83  ? 5 :
+        accuracy >= 0.66  ? 4 :
+        accuracy >= 0.5   ? 3 :
+        accuracy >= 0.33  ? 2 : 1;
+
+    for (let i = 1; i <= 6; i++) {
+        document.getElementById("r" + i)
+            .classList.toggle("active", i <= level);
     }
 }
 
 /* Timer */
-function startTimer(){
+function startTimer() {
     clearInterval(timer);
-    timeLeft=FIXED_TIME;
-    document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
-    timer=setInterval(()=>{
+    timeLeft = FIXED_TIME;
+    document.getElementById("timer").innerText = `⏳ Time: ${timeLeft}`;
+    timer = setInterval(() => {
         timeLeft--;
-        document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
-        if(timeLeft<=0){
+        document.getElementById("timer").innerText = `⏳ Time: ${timeLeft}`;
+        if (timeLeft <= 0) {
             clearInterval(timer);
             monsterAttack("⏰ Time's up!");
         }
-    },1000);
+    }, 1000);
 }
 
-/* Game flow */
-function spawnMonster(){
-    monsterHP=60;
-    document.getElementById("monster-hp").style.width="100%";
-    document.getElementById("monster").style.backgroundImage=
-        `url('${monsterImages[monstersDefeated+1]||monsterImages[1]}')`;
+/* Advance question safely */
+function advanceQuestion() {
+    current++;
+    updateRank();
+    showQuestion();
     startTimer();
 }
 
-function showQuestion(){
-    if(monstersDefeated>=10 || heroHP<=0) return endGame();
+/* Game flow */
+function spawnMonster() {
+    monsterHP = 60;
+    document.getElementById("monster-hp").style.width = "100%";
+    document.getElementById("monster").style.backgroundImage =
+        `url('${monsterImages[monstersDefeated + 1] || monsterImages[1]}')`;
+}
+
+function showQuestion() {
+    if (monstersDefeated >= 10 || heroHP <= 0) return endGame();
     let q = questions[current];
-    document.getElementById("question-box").innerText=`${q.a} × ${q.b} = ?`;
+    document.getElementById("question-box").innerText = `${q.a} × ${q.b} = ?`;
 }
 
-function showFeedback(text,type){
-    let f=document.getElementById("feedback");
-    f.className=type;
-    f.innerHTML=text;
-    f.style.display="block";
+function showFeedback(text, type) {
+    let f = document.getElementById("feedback");
+    f.className = type;
+    f.innerHTML = text;
+    f.style.display = "block";
 }
 
-function monsterAttack(reason){
-    streak=0;
-    heroHP -= 10 + monstersDefeated*5;
-    let q=questions[current];
-    showFeedback(`${reason}<br>${q.a} × ${q.b} = ${q.a*q.b}`,"wrong");
-    document.getElementById("hero-hp").style.width=heroHP+"%";
-    setTimeout(()=>{
-        document.getElementById("feedback").style.display="none";
-        current++;
-        updateRank();
-        showQuestion();
-        startTimer();
-    },WRONG_DELAY);
+function monsterAttack(reason) {
+    streak = 0;
+    heroHP -= 10 + monstersDefeated * 5;
+    let q = questions[current];
+    showFeedback(`${reason}<br>${q.a} × ${q.b} = ${q.a * q.b}`, "wrong");
+    document.getElementById("hero-hp").style.width = heroHP + "%";
+
+    setTimeout(() => {
+        document.getElementById("feedback").style.display = "none";
+        advanceQuestion();
+    }, WRONG_DELAY);
 }
 
-function submitAnswer(){
+function submitAnswer() {
     clearInterval(timer);
-    let q=questions[current];
+    let q = questions[current];
     let correct = q.a * q.b;
-    if(Number(answer.value)===correct){
+
+    if (Number(answer.value) === correct) {
         streak++;
         score++;
         updateRank();
-        let dmg = Math.min(10 + streak*4, 35);
+
+        let dmg = Math.min(10 + streak * 4, 35);
         monsterHP -= dmg;
-        showFeedback(`✅ Correct!<br>Damage: ${dmg}`,"correct");
-        setTimeout(()=>{
-            document.getElementById("feedback").style.display="none";
-            if(monsterHP<=0){
+        showFeedback(`✅ Correct!<br>Damage: ${dmg}`, "correct");
+
+        setTimeout(() => {
+            document.getElementById("feedback").style.display = "none";
+
+            if (monsterHP <= 0) {
                 monstersDefeated++;
-                if(monstersDefeated>=10 || heroHP<=0){
-                    endGame();
-                    return;
-                }
+                if (monstersDefeated >= 10) return endGame();
                 spawnMonster();
             }
-            document.getElementById("monster-hp").style.width=monsterHP+"%";
-            current++;
-            showQuestion();
-            startTimer();
-        },1200);
+
+            document.getElementById("monster-hp").style.width = monsterHP + "%";
+            advanceQuestion();
+        }, 1200);
+
     } else {
         monsterAttack("❌ Wrong!");
     }
-    answer.value="";
+
+    answer.value = "";
 }
 
-function endGame(){
-    let accuracy = score/current || 0;
-    let finalRank="";
-    if(accuracy===1) finalRank="Grandmaster";
-    else if(accuracy>=0.83) finalRank="Archmage";
-    else if(accuracy>=0.66) finalRank="Mage";
-    else if(accuracy>=0.5) finalRank="Adept";
-    else if(accuracy>=0.33) finalRank="Apprentice";
-    else finalRank="Novice";
+function endGame() {
+    let accuracy = current === 0 ? 0 : score / current;
+    if (accuracy > 1) accuracy = 1;
 
-    document.body.innerHTML=`
+    let finalRank =
+        accuracy >= 0.999 ? "Grandmaster" :
+        accuracy >= 0.83  ? "Archmage" :
+        accuracy >= 0.66  ? "Mage" :
+        accuracy >= 0.5   ? "Adept" :
+        accuracy >= 0.33  ? "Apprentice" :
+        "Novice";
+
+    document.body.innerHTML = `
         <h1>Game Over</h1>
         <p style="text-align:center">Monsters defeated: ${monstersDefeated}</p>
         <p style="text-align:center">Correct Answers: ${score} / ${current}</p>
@@ -317,14 +331,15 @@ function endGame(){
     `;
 }
 
-answer.addEventListener("keydown",e=>{
-    if(e.key==="Enter") submitAnswer();
+answer.addEventListener("keydown", e => {
+    if (e.key === "Enter") submitAnswer();
 });
 
 /* Start game */
 spawnMonster();
 showQuestion();
-document.getElementById("hero-hp").style.width="100%";
+startTimer();
+document.getElementById("hero-hp").style.width = "100%";
 </script>
 
 </body>
