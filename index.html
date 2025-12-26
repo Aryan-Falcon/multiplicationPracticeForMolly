@@ -7,7 +7,7 @@
 <style>
 body {
     margin: 0;
-    font-family: 'Georgia', serif;
+    font-family: Georgia, serif;
     background: radial-gradient(circle at center, #3a0057, #120018);
     color: #f8e7ff;
     overflow-x: hidden;
@@ -26,12 +26,21 @@ h1 {
     top: 100px;
     left: 20px;
     display: flex;
-    gap: 10px;
     gap: 14px;
 }
 
 #rank-bar {
-@@ -47,6 +47,13 @@
+    width: 20px;
+    height: 300px;
+    background: #2a002f;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#rank-fill {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(#ff6cff, #b300ff);
     transition: height 0.4s ease;
 }
 
@@ -44,15 +53,68 @@ h1 {
 
 .rank {
     opacity: 0.25;
-    transition: opacity 0.3s, text-shadow 0.3s;
-@@ -107,22 +114,15 @@
-    border: none;
 }
 
-#feedback {
-    font-size: 32px;
+.rank.active {
+    opacity: 1;
+    text-shadow: 0 0 8px #ff6cff;
+}
+
+/* ===== BATTLEFIELD ===== */
+#battlefield {
+    display: flex;
+    justify-content: space-between;
+    padding: 80px 140px;
+}
+
+.entity {
+    width: 180px;
+    height: 180px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+#hero {
+    background-image: url("https://i.imgur.com/4AiXzf8.png");
+}
+
+#monster {
+    background-size: contain;
+}
+
+.hp-bar {
+    position: absolute;
+    top: -16px;
+    width: 100%;
+    height: 12px;
+    background: #300;
+}
+
+#hero-hp, #monster-hp {
+    height: 100%;
+    width: 100%;
+    background: #f00;
+}
+
+/* ===== UI ===== */
+#question-box {
     text-align: center;
-    display: none;
+    font-size: 34px;
+    margin-top: 10px;
+}
+
+#timer {
+    text-align: center;
+    font-size: 24px;
+}
+
+#answer {
+    display: block;
+    margin: 20px auto;
+    font-size: 28px;
+    text-align: center;
+    width: 160px;
 }
 
 /* ===== SPELLS ===== */
@@ -62,74 +124,109 @@ h1 {
     height: 65px;
     border-radius: 50%;
     pointer-events: none;
-    filter: blur(0.3px);
     box-shadow: 0 0 25px currentColor;
-    animation: fly 0.75s cubic-bezier(.4,0,.6,1) forwards;
     animation: fly 0.8s ease-out forwards;
     z-index: 999;
 }
 
-@@ -132,12 +132,10 @@
+.arcane { background: radial-gradient(circle, #fff, #8b00ff); color:#d18bff; }
+.fire   { background: radial-gradient(circle, #fff, #ff4500); color:#ffae42; }
+.grand  { background: radial-gradient(circle, #fff, gold); color:gold; }
 .dark   { background: radial-gradient(circle, #fff, #660000); color:#aa0000; }
 
 @keyframes fly {
     from { transform: translate(0,0) scale(1); opacity: 1; }
-    to   { transform: translate(420px,-60px) scale(0.6); opacity: 0; }
-}
-@keyframes flyBack {
-    from { transform: translate(0,0) scale(1); opacity: 1; }
-    to   { transform: translate(-420px,-60px) scale(0.6); opacity: 0; }
-    to {
-        transform: translate(var(--dx), var(--dy)) scale(0.6);
-        opacity: 0;
-    }
+    to   { transform: translate(var(--dx), var(--dy)) scale(0.6); opacity: 0; }
 }
 
 .hit { animation: flash 0.3s; }
-@@ -161,7 +159,7 @@
+
+@keyframes flash {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(2); }
+    100% { filter: brightness(1); }
+}
+
+.shake {
+    animation: shake 0.4s;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-8px); }
+    100% { transform: translateX(0); }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Arcane Tower</h1>
 
 <div id="rank-panel">
     <div id="rank-bar"><div id="rank-fill"></div></div>
-    <div>
     <div id="rank-labels">
         <div class="rank" id="r6">Grandmaster</div>
         <div class="rank" id="r5">Archmage</div>
         <div class="rank" id="r4">Mage</div>
-@@ -184,12 +182,11 @@
+        <div class="rank" id="r3">Adept</div>
+        <div class="rank" id="r2">Apprentice</div>
+        <div class="rank" id="r1">Novice</div>
+    </div>
+</div>
+
+<div id="battlefield">
+    <div id="hero" class="entity">
+        <div class="hp-bar"><div id="hero-hp"></div></div>
+    </div>
+
+    <div id="monster" class="entity">
+        <div class="hp-bar"><div id="monster-hp"></div></div>
+    </div>
+</div>
+
 <div id="timer">⏳ Time: 20</div>
 <div id="question-box"></div>
 <input id="answer" type="number" placeholder="ENTER">
-<div id="feedback"></div>
 
 <script>
+const FIXED_TIME = 20;
 let questions=[], current=0, score=0, streak=0, monstersDefeated=0;
 let heroHP=100, monsterHP=60, timer, timeLeft;
-const FIXED_TIME = 20; // ⏳ UPDATED TIMER
-const FIXED_TIME = 20;
+
+const hero = document.getElementById("hero");
+const monster = document.getElementById("monster");
+const answer = document.getElementById("answer");
 
 const monsterImages = {
-1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
-@@ -215,98 +212,108 @@
-    let s=document.createElement("div");
+1:"https://i.imgur.com/0R8FQ4G.png",
+2:"https://i.imgur.com/7yUvePI.png",
+3:"https://i.imgur.com/jxWqIBf.png"
+};
+
+for(let i=0;i<50;i++){
+    questions.push({a:Math.ceil(Math.random()*12),b:Math.ceil(Math.random()*12)});
+}
+
+function castSpell(type, fromHero){
+    const s=document.createElement("div");
     s.className=`spell ${type}`;
     document.body.appendChild(s);
 
-    let from=document.getElementById(heroCast?"hero":"monster").getBoundingClientRect();
-    s.style.left=from.left+120+"px";
-    s.style.top=from.top+80+"px";
-    s.style.animationName=heroCast?"fly":"flyBack";
-    setTimeout(()=>s.remove(),750);
-    let to=document.getElementById(heroCast?"monster":"hero").getBoundingClientRect();
+    const from=(fromHero?hero:monster).getBoundingClientRect();
+    const to=(fromHero?monster:hero).getBoundingClientRect();
 
-    let startX = from.left + from.width/2;
-    let startY = from.top + from.height/2;
-    let endX = to.left + to.width/2;
-    let endY = to.top + to.height/2;
+    const startX=from.left+from.width/2;
+    const startY=from.top+from.height/2;
+    const endX=to.left+to.width/2;
+    const endY=to.top+to.height/2;
 
-    s.style.left = startX+"px";
-    s.style.top  = startY+"px";
-    s.style.setProperty("--dx", (endX-startX)+"px");
-    s.style.setProperty("--dy", (endY-startY)+"px");
+    s.style.left=startX+"px";
+    s.style.top=startY+"px";
+    s.style.setProperty("--dx",(endX-startX)+"px");
+    s.style.setProperty("--dy",(endY-startY)+"px");
 
     setTimeout(()=>s.remove(),800);
 }
@@ -159,7 +256,7 @@ function showQuestion(){
 
 function spawnMonster(){
     monsterHP=60;
-    monster.style.backgroundImage=`url('${monsterImages[monstersDefeated+1]}')`;
+    monster.style.backgroundImage=`url('${monsterImages[(monstersDefeated%3)+1]}')`;
     document.getElementById("monster-hp").style.width="100%";
 }
 
@@ -205,10 +302,10 @@ function next(){
 }
 
 function endGame(){
-    document.body.innerHTML=`<h1>Game Over</h1>
+    document.body.innerHTML=`
+    <h1>Game Over</h1>
     <p style="text-align:center">Correct: ${score}/${current}</p>
     <p style="text-align:center">Monsters Defeated: ${monstersDefeated}</p>
-    <p style="text-align:center">Rank: ${document.querySelector(".rank.active")?.innerText}</p>
     <button onclick="location.reload()">Play Again</button>`;
 }
 
