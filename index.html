@@ -89,6 +89,7 @@ h1 {
     background: #3a003a;
     border: 2px solid #ffb7ff;
     margin: 10px auto;
+    position: relative;
 }
 
 .hp-fill {
@@ -96,6 +97,11 @@ h1 {
     background: #ff55ff;
     width: 100%;
     transition: width 0.4s;
+}
+
+.hp-text {
+    text-align: center;
+    font-size: 18px;
 }
 
 #timer, #question-box {
@@ -175,8 +181,13 @@ input {
 </div>
 
 <div style="text-align:center">
-    Hero HP<div class="hp-bar"><div id="hero-hp" class="hp-fill"></div></div>
-    Monster HP<div class="hp-bar"><div id="monster-hp" class="hp-fill"></div></div>
+    Hero HP
+    <div class="hp-bar"><div id="hero-hp" class="hp-fill"></div></div>
+    <div id="hero-hp-text" class="hp-text"></div>
+
+    Monster HP
+    <div class="hp-bar"><div id="monster-hp" class="hp-fill"></div></div>
+    <div id="monster-hp-text" class="hp-text"></div>
 </div>
 
 <div id="timer">⏳ Time: 20</div>
@@ -184,9 +195,15 @@ input {
 <input id="answer" type="number" placeholder="ENTER">
 
 <script>
-let questions=[], current=0, score=0, streak=0, monstersDefeated=0;
-let heroHP=100, monsterHP=60, timer, timeLeft;
+let questions = [];
+let current = 0, score = 0, streak = 0, monstersDefeated = 0;
+
+let heroHP = 100, heroMaxHP = 100;
+let monsterHP = 60, monsterMaxHP = 60;
+
+let timer, timeLeft;
 const FIXED_TIME = 20;
+const TOTAL_MONSTERS = 14;
 
 const monsterImages = {
 1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
@@ -205,8 +222,25 @@ const monsterImages = {
 14:"https://files.d20.io/images/424476265/3P9xMAY1XiVamu9HW3-j2g/original.png"
 };
 
-for(let i=0;i<40;i++)
-    questions.push({a:Math.ceil(Math.random()*12),b:Math.ceil(Math.random()*12)});
+function generateQuestion(){
+    return { a: Math.ceil(Math.random()*12), b: Math.ceil(Math.random()*12) };
+}
+
+function getQuestion(){
+    if(!questions[current]) questions.push(generateQuestion());
+    return questions[current];
+}
+
+function updateHP(){
+    heroHP = Math.max(heroHP, 0);
+    monsterHP = Math.max(monsterHP, 0);
+
+    hero-hp.style.width = (heroHP/heroMaxHP*100)+"%";
+    monster-hp.style.width = (monsterHP/monsterMaxHP*100)+"%";
+
+    hero-hp-text.innerText = `${heroHP} / ${heroMaxHP}`;
+    monster-hp-text.innerText = `${monsterHP} / ${monsterMaxHP}`;
+}
 
 function castSpell(type, heroCast=true){
     let s=document.createElement("div");
@@ -231,7 +265,7 @@ function castSpell(type, heroCast=true){
 
 function updateRank(){
     let acc=current?score/current:0;
-    document.getElementById("rank-fill").style.height=Math.min(acc*100,100)+"%";
+    rank-fill.style.height=Math.min(acc*100,100)+"%";
     let lvl=acc===1?6:acc>=.85?5:acc>=.7?4:acc>=.55?3:acc>=.35?2:1;
     for(let i=1;i<=6;i++)
         document.getElementById("r"+i).classList.toggle("active",i<=lvl);
@@ -240,49 +274,50 @@ function updateRank(){
 function startTimer(){
     clearInterval(timer);
     timeLeft=FIXED_TIME;
-    document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
     timer=setInterval(()=>{
-        document.getElementById("timer").innerText=`⏳ Time: ${--timeLeft}`;
+        timer.innerText=`⏳ Time: ${--timeLeft}`;
         if(timeLeft<=0){ clearInterval(timer); monsterAttack(true); }
     },1000);
 }
 
 function showQuestion(){
-    let q=questions[current];
-    document.getElementById("question-box").innerText=`${q.a} × ${q.b} = ?`;
+    let q=getQuestion();
+    question-box.innerText=`${q.a} × ${q.b} = ?`;
 }
 
 function spawnMonster(){
-    monsterHP=60;
+    monsterMaxHP = 60 + monstersDefeated * 12;
+    monsterHP = monsterMaxHP;
     monster.style.backgroundImage=`url('${monsterImages[monstersDefeated+1]}')`;
-    document.getElementById("monster-hp").style.width="100%";
+    updateHP();
 }
 
 function monsterAttack(timeout){
     castSpell("dark",false);
-    heroHP-=timeout?20:10;
+    heroHP -= timeout ? 20 : 10;
     hero.classList.add("shake");
     setTimeout(()=>hero.classList.remove("shake"),400);
-    document.getElementById("hero-hp").style.width=heroHP+"%";
+    updateHP();
     next();
 }
 
 function submitAnswer(){
     clearInterval(timer);
-    let q=questions[current];
+    let q=getQuestion();
     let val=Number(answer.value);
     answer.value="";
 
     if(val===q.a*q.b){
         streak++; score++;
         castSpell(streak>=6?"grand":streak>=3?"fire":"arcane",true);
-        monster.classList.add("hit");
-        setTimeout(()=>monster.classList.remove("hit"),300);
-        monsterHP-=20;
-        document.getElementById("monster-hp").style.width=monsterHP+"%";
+
+        let bonus=Math.min(streak*5,20);
+        monsterHP -= (20 + bonus);
+        updateHP();
+
         if(monsterHP<=0){
             monstersDefeated++;
-            if(monstersDefeated>=14) return endGame();
+            if(monstersDefeated>=TOTAL_MONSTERS) return endGame();
             spawnMonster();
         }
     } else {
@@ -309,10 +344,10 @@ function endGame(){
 
 answer.addEventListener("keydown",e=>e.key==="Enter"&&submitAnswer());
 
-document.getElementById("hero-hp").style.width="100%";
 spawnMonster();
 showQuestion();
 startTimer();
+updateHP();
 </script>
 
 </body>
