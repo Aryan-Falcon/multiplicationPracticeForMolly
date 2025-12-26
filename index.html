@@ -36,17 +36,25 @@ h1 {
     border: 2px solid #ff9dff;
     border-radius: 8px;
     overflow: hidden;
+    display: flex;
+    align-items: flex-end;
 }
 
 #rank-fill {
-    height: 0%;
     width: 100%;
+    height: 0%;
     background: linear-gradient(to top, #ff00ff, #ffb7ff);
-    transition: height 0.4s;
+    transition: height 0.4s ease;
 }
 
-.rank { opacity: 0.3; }
-.rank.active { opacity: 1; }
+.rank {
+    opacity: 0.25;
+    transition: opacity 0.3s, text-shadow 0.3s;
+}
+.rank.active {
+    opacity: 1;
+    text-shadow: 0 0 10px #ffb7ff;
+}
 
 /* ===== BATTLE ===== */
 #battlefield {
@@ -59,12 +67,11 @@ h1 {
 .character {
     width: 230px;
     height: 230px;
-    background-size: contain;     /* prevents cropping */
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 
-/* UPDATED HERO IMAGE */
 #hero {
     background-image: url("https://i.pinimg.com/474x/c0/6e/e4/c06ee4f5b2cecf7f6576343fdf521df1.jpg");
 }
@@ -109,26 +116,28 @@ input {
 /* ===== SPELLS ===== */
 .spell {
     position: absolute;
-    width: 40px;
-    height: 40px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
     pointer-events: none;
-    animation: fly 0.6s linear forwards;
+    filter: blur(0.3px);
+    box-shadow: 0 0 25px currentColor;
+    animation: fly 0.75s cubic-bezier(.4,0,.6,1) forwards;
+    z-index: 999;
 }
 
-.arcane { background: radial-gradient(#fff, #c77dff); }
-.fire   { background: radial-gradient(#fff, #ff5500); }
-.grand  { background: radial-gradient(#fff, #00ffff); box-shadow: 0 0 30px cyan; }
-.dark   { background: radial-gradient(#fff, #660000); }
+.arcane { background: radial-gradient(circle, #fff, #c77dff); color:#d9a4ff; }
+.fire   { background: radial-gradient(circle, #fff, #ff5500); color:#ff7a2f; }
+.grand  { background: radial-gradient(circle, #fff, #00ffff); color:cyan; box-shadow:0 0 45px cyan; }
+.dark   { background: radial-gradient(circle, #fff, #660000); color:#aa0000; }
 
 @keyframes fly {
-    from { transform: translateX(0); opacity: 1; }
-    to   { transform: translateX(420px); opacity: 0; }
+    from { transform: translate(0,0) scale(1); opacity: 1; }
+    to   { transform: translate(420px,-60px) scale(0.6); opacity: 0; }
 }
-
 @keyframes flyBack {
-    from { transform: translateX(0); opacity: 1; }
-    to   { transform: translateX(-420px); opacity: 0; }
+    from { transform: translate(0,0) scale(1); opacity: 1; }
+    to   { transform: translate(-420px,-60px) scale(0.6); opacity: 0; }
 }
 
 .hit { animation: flash 0.3s; }
@@ -172,7 +181,7 @@ input {
     Monster HP<div class="hp-bar"><div id="monster-hp" class="hp-fill"></div></div>
 </div>
 
-<div id="timer">⏳ Time: 16</div>
+<div id="timer">⏳ Time: 20</div>
 <div id="question-box"></div>
 <input id="answer" type="number" placeholder="ENTER">
 <div id="feedback"></div>
@@ -180,9 +189,8 @@ input {
 <script>
 let questions=[], current=0, score=0, streak=0, monstersDefeated=0;
 let heroHP=100, monsterHP=60, timer, timeLeft;
-const FIXED_TIME=16;
+const FIXED_TIME = 20; // ⏳ UPDATED TIMER
 
-/* MONSTER IMAGES (1–14) */
 const monsterImages = {
 1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
 2:"https://i.pinimg.com/originals/12/74/5e/12745ef0d668ea915bc5cb4a6223e643.jpg",
@@ -194,16 +202,14 @@ const monsterImages = {
 8:"https://img.freepik.com/free-photo/literary-fantasy-character_23-2151863447.jpg",
 9:"https://i.pinimg.com/474x/c8/51/9c/c8519ce4a412892d327c7671c1f30bc3.jpg",
 10:"https://img.freepik.com/premium-photo/close-up-monster-with-purple-face-purple-body-generative-ai_974533-21727.jpg",
-11:"https://s.yimg.com/ny/api/res/1.2/SCj.R_t65SECYWL4Gw8WAQ--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTU0MA--/https://media.zenfs.com/en/gamesradar_237/ecff60b6a6145d271e2ff32da3526946",
-12:"https://static.wikia.nocookie.net/fairytailfanon/images/5/52/Leviathan2.jpg/revision/latest?cb=20160207110928",
+11:"https://media.zenfs.com/en/gamesradar_237/ecff60b6a6145d271e2ff32da3526946",
+12:"https://static.wikia.nocookie.net/fairytailfanon/images/5/52/Leviathan2.jpg",
 13:"https://c2.staticflickr.com/6/5611/15565517260_275a4e52fa_b.jpg",
-14:"https://files.d20.io/images/424476265/3P9xMAY1XiVamu9HW3-j2g/original.png?1736707980"
+14:"https://files.d20.io/images/424476265/3P9xMAY1XiVamu9HW3-j2g/original.png"
 };
 
-/* QUESTIONS */
-for(let i=0;i<40;i++){
+for(let i=0;i<40;i++)
     questions.push({a:Math.ceil(Math.random()*12),b:Math.ceil(Math.random()*12)});
-}
 
 function castSpell(type, heroCast=true){
     let s=document.createElement("div");
@@ -211,15 +217,15 @@ function castSpell(type, heroCast=true){
     document.body.appendChild(s);
     let from=document.getElementById(heroCast?"hero":"monster").getBoundingClientRect();
     s.style.left=from.left+120+"px";
-    s.style.top=from.top+100+"px";
+    s.style.top=from.top+80+"px";
     s.style.animationName=heroCast?"fly":"flyBack";
-    setTimeout(()=>s.remove(),600);
+    setTimeout(()=>s.remove(),750);
 }
 
 function updateRank(){
     let acc=current?score/current:0;
-    document.getElementById("rank-fill").style.height=(acc*100)+"%";
-    let lvl=acc>=.999?6:acc>=.83?5:acc>=.66?4:acc>=.5?3:acc>=.33?2:1;
+    document.getElementById("rank-fill").style.height=Math.min(acc*100,100)+"%";
+    let lvl=acc===1?6:acc>=.85?5:acc>=.7?4:acc>=.55?3:acc>=.35?2:1;
     for(let i=1;i<=6;i++)
         document.getElementById("r"+i).classList.toggle("active",i<=lvl);
 }
@@ -227,6 +233,7 @@ function updateRank(){
 function startTimer(){
     clearInterval(timer);
     timeLeft=FIXED_TIME;
+    document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
     timer=setInterval(()=>{
         document.getElementById("timer").innerText=`⏳ Time: ${--timeLeft}`;
         if(timeLeft<=0){ clearInterval(timer); monsterAttack(true); }
@@ -256,10 +263,12 @@ function monsterAttack(timeout){
 function submitAnswer(){
     clearInterval(timer);
     let q=questions[current];
-    if(Number(answer.value)===q.a*q.b){
+    let val=Number(answer.value);
+    answer.value="";
+
+    if(val===q.a*q.b){
         streak++; score++;
-        let type=streak>=6?"grand":streak>=3?"fire":"arcane";
-        castSpell(type,true);
+        castSpell(streak>=6?"grand":streak>=3?"fire":"arcane",true);
         monster.classList.add("hit");
         setTimeout(()=>monster.classList.remove("hit"),300);
         monsterHP-=20;
