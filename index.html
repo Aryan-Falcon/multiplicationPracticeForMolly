@@ -26,7 +26,7 @@ h1 {
     top: 100px;
     left: 20px;
     display: flex;
-    gap: 10px;
+    gap: 14px;
 }
 
 #rank-bar {
@@ -45,6 +45,13 @@ h1 {
     height: 0%;
     background: linear-gradient(to top, #ff00ff, #ffb7ff);
     transition: height 0.4s ease;
+}
+
+#rank-labels {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .rank {
@@ -107,12 +114,6 @@ input {
     border: none;
 }
 
-#feedback {
-    font-size: 32px;
-    text-align: center;
-    display: none;
-}
-
 /* ===== SPELLS ===== */
 .spell {
     position: absolute;
@@ -120,9 +121,8 @@ input {
     height: 65px;
     border-radius: 50%;
     pointer-events: none;
-    filter: blur(0.3px);
     box-shadow: 0 0 25px currentColor;
-    animation: fly 0.75s cubic-bezier(.4,0,.6,1) forwards;
+    animation: fly 0.8s ease-out forwards;
     z-index: 999;
 }
 
@@ -132,12 +132,10 @@ input {
 .dark   { background: radial-gradient(circle, #fff, #660000); color:#aa0000; }
 
 @keyframes fly {
-    from { transform: translate(0,0) scale(1); opacity: 1; }
-    to   { transform: translate(420px,-60px) scale(0.6); opacity: 0; }
-}
-@keyframes flyBack {
-    from { transform: translate(0,0) scale(1); opacity: 1; }
-    to   { transform: translate(-420px,-60px) scale(0.6); opacity: 0; }
+    to {
+        transform: translate(var(--dx), var(--dy)) scale(0.6);
+        opacity: 0;
+    }
 }
 
 .hit { animation: flash 0.3s; }
@@ -161,7 +159,7 @@ input {
 
 <div id="rank-panel">
     <div id="rank-bar"><div id="rank-fill"></div></div>
-    <div>
+    <div id="rank-labels">
         <div class="rank" id="r6">Grandmaster</div>
         <div class="rank" id="r5">Archmage</div>
         <div class="rank" id="r4">Mage</div>
@@ -184,12 +182,11 @@ input {
 <div id="timer">⏳ Time: 20</div>
 <div id="question-box"></div>
 <input id="answer" type="number" placeholder="ENTER">
-<div id="feedback"></div>
 
 <script>
 let questions=[], current=0, score=0, streak=0, monstersDefeated=0;
 let heroHP=100, monsterHP=60, timer, timeLeft;
-const FIXED_TIME = 20; // ⏳ UPDATED TIMER
+const FIXED_TIME = 20;
 
 const monsterImages = {
 1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
@@ -215,11 +212,21 @@ function castSpell(type, heroCast=true){
     let s=document.createElement("div");
     s.className=`spell ${type}`;
     document.body.appendChild(s);
+
     let from=document.getElementById(heroCast?"hero":"monster").getBoundingClientRect();
-    s.style.left=from.left+120+"px";
-    s.style.top=from.top+80+"px";
-    s.style.animationName=heroCast?"fly":"flyBack";
-    setTimeout(()=>s.remove(),750);
+    let to=document.getElementById(heroCast?"monster":"hero").getBoundingClientRect();
+
+    let startX = from.left + from.width/2;
+    let startY = from.top + from.height/2;
+    let endX = to.left + to.width/2;
+    let endY = to.top + to.height/2;
+
+    s.style.left = startX+"px";
+    s.style.top  = startY+"px";
+    s.style.setProperty("--dx", (endX-startX)+"px");
+    s.style.setProperty("--dy", (endY-startY)+"px");
+
+    setTimeout(()=>s.remove(),800);
 }
 
 function updateRank(){
