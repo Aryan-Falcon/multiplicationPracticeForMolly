@@ -28,8 +28,8 @@ h1 {
 }
 
 .entity {
-    width: 220px;
-    height: 220px;
+    width: 240px;
+    height: 240px;
     background-size: contain;
     background-repeat: no-repeat;
     position: relative;
@@ -47,7 +47,7 @@ h1 {
 
 /* ===== HP BARS ===== */
 .hp-container {
-    width: 220px;
+    width: 240px;
     margin: 0 auto 10px;
 }
 
@@ -92,44 +92,63 @@ h1 {
     padding: 4px;
 }
 
-/* ===== SPELLS ===== */
+/* ===== SPELL CASTING ===== */
+.cast-circle {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.8);
+    box-shadow: 0 0 30px currentColor, inset 0 0 20px currentColor;
+    animation: castPulse 0.6s ease-out forwards;
+    pointer-events: none;
+    z-index: 998;
+}
+
+@keyframes castPulse {
+    0% { transform: scale(0.3) rotate(0deg); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: scale(1.1) rotate(180deg); opacity: 0; }
+}
+
+/* ===== SPELL PROJECTILES ===== */
 .spell {
     position: absolute;
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     pointer-events: none;
     z-index: 999;
-    filter: blur(0.2px);
-    animation: spellFly 0.8s cubic-bezier(.4,0,.2,1) forwards;
+    animation: spellFly 0.9s cubic-bezier(.4,0,.2,1) forwards;
 }
 
 .arcane {
-    background: radial-gradient(circle, #ffffff, #a020f0);
-    box-shadow: 0 0 35px #c070ff, 0 0 70px #8b00ff;
+    background: radial-gradient(circle, #fff, #a020f0);
+    box-shadow: 0 0 40px #c070ff, 0 0 90px #8b00ff;
 }
 
 .fire {
     background: radial-gradient(circle, #fff, #ff4500);
-    box-shadow: 0 0 35px #ff4500, 0 0 70px #ff0000;
+    box-shadow: 0 0 40px #ff4500, 0 0 90px #ff0000;
 }
 
 .grand {
     background: radial-gradient(circle, #fff, gold);
-    box-shadow: 0 0 40px gold, 0 0 90px orange;
+    box-shadow: 0 0 50px gold, 0 0 110px orange;
 }
 
 .dark {
     background: radial-gradient(circle, #fff, #660000);
-    box-shadow: 0 0 40px #880000, 0 0 80px #440000;
+    box-shadow: 0 0 45px #880000, 0 0 90px #440000;
 }
 
 @keyframes spellFly {
-    0% { transform: scale(0.6) translate(0,0); opacity: 1; }
-    70% { transform: scale(1.1) translate(var(--dx), var(--dy)); }
-    100% { transform: scale(0.3) translate(var(--dx), var(--dy)); opacity: 0; }
+    0% { transform: scale(0.3) translate(0,0); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: scale(1.1) translate(var(--dx), var(--dy)); opacity: 0; }
 }
 
+/* ===== HIT EFFECTS ===== */
 .hit { animation: flash 0.25s; }
 @keyframes flash { 50% { filter: brightness(2.5); } }
 
@@ -198,23 +217,36 @@ const monsterImages = {
 14:"https://files.d20.io/images/424476265/3P9xMAY1XiVamu9HW3-j2g/original.png"
 };
 
-function spawnSpell(type){
-    const s = document.createElement("div");
-    s.className = "spell " + type;
-    document.body.appendChild(s);
-
+function castSpell(type){
     const h = hero.getBoundingClientRect();
     const m = monster.getBoundingClientRect();
 
-    s.style.left = h.left + h.width/2 - 40 + "px";
-    s.style.top  = h.top + h.height/2 - 40 + "px";
+    const circle = document.createElement("div");
+    circle.className = "cast-circle";
+    circle.style.color = type === "fire" ? "#ff4500" :
+                         type === "grand" ? "gold" :
+                         type === "dark" ? "#880000" : "#a020f0";
+    circle.style.left = h.left + h.width/2 - 80 + "px";
+    circle.style.top  = h.top + h.height/2 - 80 + "px";
+    document.body.appendChild(circle);
 
-    s.style.setProperty("--dx", (m.left - h.left) + "px");
-    s.style.setProperty("--dy", (m.top - h.top) + "px");
+    setTimeout(() => {
+        const s = document.createElement("div");
+        s.className = "spell " + type;
+        document.body.appendChild(s);
 
-    monster.classList.add("hit");
-    setTimeout(()=>monster.classList.remove("hit"),250);
-    setTimeout(()=>s.remove(),800);
+        s.style.left = h.left + h.width/2 - 45 + "px";
+        s.style.top  = h.top + h.height/2 - 45 + "px";
+
+        s.style.setProperty("--dx", (m.left - h.left) + "px");
+        s.style.setProperty("--dy", (m.top - h.top) + "px");
+
+        monster.classList.add("hit");
+        setTimeout(()=>monster.classList.remove("hit"),250);
+        setTimeout(()=>s.remove(),900);
+    }, 300);
+
+    setTimeout(()=>circle.remove(),600);
 }
 
 function showQuestion(){
@@ -253,9 +285,9 @@ function submitAnswer(){
         const damage = 20 + Math.min(streak*5, 40);
         monsterHP -= damage;
 
-        if(streak >= 8) spawnSpell("grand");
-        else if(streak >= 5) spawnSpell("fire");
-        else spawnSpell("arcane");
+        if(streak >= 8) castSpell("grand");
+        else if(streak >= 5) castSpell("fire");
+        else castSpell("arcane");
 
         updateMonsterHP();
 
@@ -272,7 +304,7 @@ function submitAnswer(){
 }
 
 function monsterAttack(timeout){
-    spawnSpell("dark");
+    castSpell("dark");
     const dmg = (timeout?20:10) + monstersDefeated*2;
     heroHP = Math.max(heroHP-dmg,0);
     updateHeroHP();
