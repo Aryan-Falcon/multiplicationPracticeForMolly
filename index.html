@@ -85,17 +85,24 @@ h1 {
     margin-bottom: 10px;
 }
 
-#feedback-box {
-    font-size: 20px;
-    min-height: 26px;
-    margin-bottom: 8px;
-}
-
 #answer {
     font-size: 28px;
     width: 160px;
     text-align: center;
     padding: 4px;
+    margin-bottom: 8px;
+}
+
+/* ===== FEEDBACK ===== */
+#feedback-box {
+    font-size: 22px;
+    min-height: 30px;
+    margin-top: 4px;
+    text-shadow: 0 0 10px #ff9cff;
+    background: rgba(255, 108, 255, 0.15);
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: inline-block;
 }
 
 /* ===== SPELLS ===== */
@@ -173,8 +180,8 @@ h1 {
 <div id="ui">
     <div id="timer">⏳ Time: 20</div>
     <div id="question-box"></div>
-    <div id="feedback-box"></div>
     <input id="answer" type="number" placeholder="ENTER">
+    <div id="feedback-box"></div>
 </div>
 
 <script>
@@ -183,6 +190,7 @@ let score = 0, streak = 0, monstersDefeated = 0;
 let heroHP = 100, monsterHP = 60, maxMonsterHP = 60;
 let timer, timeLeft, gameOver = false;
 let currentQuestion;
+let maxDamageCap = 40;
 
 const hero = document.getElementById("hero");
 const monster = document.getElementById("monster");
@@ -233,11 +241,9 @@ function showQuestion(){
     if (Math.random() < 0.5) {
         currentQuestion = { text: `${a} × ${b} = ?`, answer: product };
     } else {
-        if (Math.random() < 0.5) {
-            currentQuestion = { text: `${product} ÷ ${a} = ?`, answer: b };
-        } else {
-            currentQuestion = { text: `${product} ÷ ${b} = ?`, answer: a };
-        }
+        currentQuestion = Math.random() < 0.5
+            ? { text: `${product} ÷ ${a} = ?`, answer: b }
+            : { text: `${product} ÷ ${b} = ?`, answer: a };
     }
     document.getElementById("question-box").innerText = currentQuestion.text;
 }
@@ -269,17 +275,20 @@ function submitAnswer(){
     if(val === currentQuestion.answer){
         streak++; score++;
         feedback.innerText = "✔ Correct";
-        const damage = 20 + Math.min(streak*5, 40);
+        const damage = 20 + Math.min(streak*5, maxDamageCap);
         monsterHP -= damage;
 
-        if(streak >= 8) spawnSpell("grand");
-        else if(streak >= 5) spawnSpell("fire");
-        else spawnSpell("arcane");
-
+        spawnSpell(streak >= 8 ? "grand" : streak >= 5 ? "fire" : "arcane");
         updateMonsterHP();
 
         if(monsterHP <= 0){
             monstersDefeated++;
+
+            if(monstersDefeated === 5 || monstersDefeated === 10){
+                showChoiceEvent();
+                return;
+            }
+
             if(monstersDefeated >= 14) return endGame(true);
             spawnMonster();
         }
@@ -291,6 +300,28 @@ function submitAnswer(){
     }
 }
 
+function showChoiceEvent(){
+    clearInterval(timer);
+    feedback.innerHTML = `
+        <div>Choose your bonus:</div>
+        <button id="add-hp" style="margin:6px;padding:6px 12px;">+10 HP</button>
+        <button id="add-damage" style="margin:6px;padding:6px 12px;">+5 Max Damage Cap</button>
+    `;
+    document.getElementById("add-hp").onclick = () => {
+        heroHP = Math.min(heroHP + 10, 100);
+        updateHeroHP();
+        feedback.innerText = "You gained +10 HP!";
+        spawnMonster();
+        next();
+    };
+    document.getElementById("add-damage").onclick = () => {
+        maxDamageCap += 5;
+        feedback.innerText = "Max damage cap increased by 5!";
+        spawnMonster();
+        next();
+    };
+}
+
 function monsterAttack(timeout, delayNext){
     spawnSpell("dark");
     const dmg = (timeout?20:10) + monstersDefeated*2;
@@ -299,13 +330,8 @@ function monsterAttack(timeout, delayNext){
     hero.classList.add("shake");
     setTimeout(()=>hero.classList.remove("shake"),400);
 
-    if(heroHP <= 0){
-        endGame(false);
-    } else if(delayNext){
-        setTimeout(next, 2500);
-    } else {
-        next();
-    }
+    heroHP <= 0 ? endGame(false)
+        : delayNext ? setTimeout(next, 2500) : next();
 }
 
 function next(){
@@ -324,20 +350,19 @@ function startTimer(){
     },1000);
 }
 
-function getRank(monsters){
-    if(monsters >= 14) return "Grandmaster";
-    if(monsters >= 11) return "Archmage";
-    if(monsters >= 8) return "Mage";
-    if(monsters >= 5) return "Adept";
-    if(monsters >= 2) return "Apprentice";
+function getRank(m){
+    if(m >= 14) return "Grandmaster";
+    if(m >= 11) return "Archmage";
+    if(m >= 8) return "Mage";
+    if(m >= 5) return "Adept";
+    if(m >= 2) return "Apprentice";
     return "Novice";
 }
 
 function endGame(win){
     gameOver = true;
     clearInterval(timer);
-    const attempts = score + (streak === 0 ? 1 : 0);
-    const accuracy = score / Math.max(attempts,1);
+    const accuracy = score / Math.max(score + 1, 1);
     const rank = getRank(monstersDefeated);
 
     document.body.innerHTML = `
