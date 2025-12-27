@@ -85,6 +85,12 @@ h1 {
     margin-bottom: 10px;
 }
 
+#feedback-box {
+    font-size: 20px;
+    min-height: 26px;
+    margin-bottom: 8px;
+}
+
 #answer {
     font-size: 28px;
     width: 160px;
@@ -167,6 +173,7 @@ h1 {
 <div id="ui">
     <div id="timer">⏳ Time: 20</div>
     <div id="question-box"></div>
+    <div id="feedback-box"></div>
     <input id="answer" type="number" placeholder="ENTER">
 </div>
 
@@ -180,6 +187,7 @@ let currentQuestion;
 const hero = document.getElementById("hero");
 const monster = document.getElementById("monster");
 const answer = document.getElementById("answer");
+const feedback = document.getElementById("feedback-box");
 
 const monsterImages = {
 1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
@@ -223,24 +231,14 @@ function showQuestion(){
     const product = a * b;
 
     if (Math.random() < 0.5) {
-        currentQuestion = {
-            text: `${a} × ${b} = ?`,
-            answer: product
-        };
+        currentQuestion = { text: `${a} × ${b} = ?`, answer: product };
     } else {
         if (Math.random() < 0.5) {
-            currentQuestion = {
-                text: `${product} ÷ ${a} = ?`,
-                answer: b
-            };
+            currentQuestion = { text: `${product} ÷ ${a} = ?`, answer: b };
         } else {
-            currentQuestion = {
-                text: `${product} ÷ ${b} = ?`,
-                answer: a
-            };
+            currentQuestion = { text: `${product} ÷ ${b} = ?`, answer: a };
         }
     }
-
     document.getElementById("question-box").innerText = currentQuestion.text;
 }
 
@@ -270,6 +268,7 @@ function submitAnswer(){
 
     if(val === currentQuestion.answer){
         streak++; score++;
+        feedback.innerText = "✔ Correct";
         const damage = 20 + Math.min(streak*5, 40);
         monsterHP -= damage;
 
@@ -287,21 +286,30 @@ function submitAnswer(){
         next();
     } else {
         streak = 0;
-        monsterAttack(false);
+        feedback.innerText = `✖ Correct Answer: ${currentQuestion.text.replace("= ?", "= " + currentQuestion.answer)}`;
+        monsterAttack(false, true);
     }
 }
 
-function monsterAttack(timeout){
+function monsterAttack(timeout, delayNext){
     spawnSpell("dark");
     const dmg = (timeout?20:10) + monstersDefeated*2;
     heroHP = Math.max(heroHP-dmg,0);
     updateHeroHP();
     hero.classList.add("shake");
     setTimeout(()=>hero.classList.remove("shake"),400);
-    heroHP<=0 ? endGame(false) : next();
+
+    if(heroHP <= 0){
+        endGame(false);
+    } else if(delayNext){
+        setTimeout(next, 2500);
+    } else {
+        next();
+    }
 }
 
 function next(){
+    feedback.innerText = "";
     showQuestion();
     startTimer();
 }
@@ -316,12 +324,12 @@ function startTimer(){
     },1000);
 }
 
-function getRank(acc){
-    if(acc === 1) return "Grandmaster";
-    if(acc >= 0.85) return "Archmage";
-    if(acc >= 0.7) return "Mage";
-    if(acc >= 0.55) return "Adept";
-    if(acc >= 0.35) return "Apprentice";
+function getRank(monsters){
+    if(monsters >= 14) return "Grandmaster";
+    if(monsters >= 11) return "Archmage";
+    if(monsters >= 8) return "Mage";
+    if(monsters >= 5) return "Adept";
+    if(monsters >= 2) return "Apprentice";
     return "Novice";
 }
 
@@ -330,13 +338,13 @@ function endGame(win){
     clearInterval(timer);
     const attempts = score + (streak === 0 ? 1 : 0);
     const accuracy = score / Math.max(attempts,1);
-    const rank = getRank(accuracy);
+    const rank = getRank(monstersDefeated);
 
     document.body.innerHTML = `
         <h1>${win ? "Victory!" : "Defeat"}</h1>
+        <p>Monsters Defeated: ${monstersDefeated}</p>
         <p>Accuracy: ${(accuracy*100).toFixed(1)}%</p>
         <p>Rank Achieved: <strong>${rank}</strong></p>
-        <p>Monsters Defeated: ${monstersDefeated}</p>
         <button onclick="location.reload()">Play Again</button>
     `;
 }
