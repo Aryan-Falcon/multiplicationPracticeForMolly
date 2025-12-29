@@ -2,155 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Multiplication RPG — Arcane Tower</title>
+<title>Arcane Tower</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Georgia, serif;
-    background: radial-gradient(circle at center, #3a0057, #120018);
-    color: #f8e7ff;
-    text-align: center;
+body{
+    margin:0;
+    font-family:"Georgia",serif;
+    background:radial-gradient(circle at top,#3a0057,#120018);
+    color:#f8e7ff;
+    text-align:center;
 }
 
-h1 {
-    font-size: 42px;
-    margin-top: 20px;
-    text-shadow: 0 0 15px #ff6cff;
+h1{
+    font-size:48px;
+    margin:20px 0;
+    text-shadow:0 0 20px #ff6cff;
 }
 
-/* ===== BATTLEFIELD ===== */
-#battlefield {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 40px 120px;
+#battlefield{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 100px;
 }
 
-.entity {
-    width: 220px;
-    height: 220px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    position: relative;
+.entity{
+    width:260px;
+    height:260px;
+    background-size:contain;
+    background-repeat:no-repeat;
+    background-position:center;
 }
 
-/* HERO */
-#hero {
-    background-image: url("https://i.pinimg.com/474x/c0/6e/e4/c06ee4f5b2cecf7f6576343fdf521df1.jpg");
+#hero{
+    background-image:url("https://i.pinimg.com/474x/c0/6e/e4/c06ee4f5b2cecf7f6576343fdf521df1.jpg");
 }
 
-/* MONSTER */
-#monster {
-    background-size: contain;
+.hp-container{
+    width:320px;
+    margin:0 auto 10px;
 }
 
-/* ===== HP BARS ===== */
-.hp-container {
-    width: 220px;
-    margin: 0 auto 10px;
+.hp-bar{
+    height:18px;
+    background:#3a003a;
+    border-radius:12px;
+    overflow:hidden;
 }
 
-.hp-bar {
-    width: 100%;
-    height: 14px;
-    background: #3a003a;
-    border-radius: 8px;
-    overflow: hidden;
+.hp-fill{
+    height:100%;
+    background:linear-gradient(to right,#ff6cff,#ff9cff);
 }
 
-.hp-fill {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(to right, #ff6cff, #ff9cff);
+.hp-text{
+    margin-top:6px;
+    font-size:16px;
 }
 
-.hp-text {
-    font-size: 14px;
-    margin-top: 4px;
+#ui{margin-top:10px}
+
+#timer{
+    font-size:26px;
+    margin-bottom:10px;
 }
 
-/* ===== CENTER UI ===== */
-#ui {
-    margin-top: 10px;
+#question-box{
+    font-size:36px;
+    margin-bottom:10px;
 }
 
-#timer {
-    font-size: 24px;
-    margin-bottom: 8px;
+#answer{
+    font-size:28px;
+    width:180px;
+    text-align:center;
+    padding:6px;
 }
 
-#question-box {
-    font-size: 34px;
-    margin-bottom: 10px;
+#feedback-box{
+    margin-top:12px;
+    min-height:40px;
+    font-size:22px;
+    padding:8px;
+    border:2px solid #ff6cff;
+    border-radius:10px;
+    box-shadow:0 0 15px #ff6cff;
 }
 
-#answer {
-    font-size: 28px;
-    width: 160px;
-    text-align: center;
-    padding: 4px;
-    margin-bottom: 8px;
+/* SPELLS */
+.spell{
+    position:absolute;
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:999;
+    animation:spellFly .9s cubic-bezier(.4,0,.2,1) forwards;
 }
 
-/* ===== FEEDBACK ===== */
-#feedback-box {
-    font-size: 22px;
-    min-height: 30px;
-    margin-top: 4px;
-    text-shadow: 0 0 10px #ff9cff;
-    background: rgba(255, 108, 255, 0.15);
-    border-radius: 8px;
-    padding: 6px 12px;
-    display: inline-block;
+.arcane{background:radial-gradient(circle,#fff,#a020f0);box-shadow:0 0 40px #c070ff}
+.fire{background:radial-gradient(circle,#fff,#ff4500);box-shadow:0 0 50px #ff4500}
+.grand{background:radial-gradient(circle,#fff,gold);box-shadow:0 0 70px gold}
+.dark{background:radial-gradient(circle,#fff,#660000);box-shadow:0 0 60px #880000}
+
+@keyframes spellFly{
+    0%{transform:scale(.5);opacity:1}
+    70%{transform:scale(1.2) translate(var(--dx),var(--dy))}
+    100%{transform:scale(.3) translate(var(--dx),var(--dy));opacity:0}
 }
 
-/* ===== SPELLS ===== */
-.spell {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 999;
-    filter: blur(0.2px);
-    animation: spellFly 0.8s cubic-bezier(.4,0,.2,1) forwards;
-}
+.hit{animation:flash .25s}
+@keyframes flash{50%{filter:brightness(2.5)}}
 
-.arcane {
-    background: radial-gradient(circle, #ffffff, #a020f0);
-    box-shadow: 0 0 35px #c070ff, 0 0 70px #8b00ff;
-}
-
-.fire {
-    background: radial-gradient(circle, #fff, #ff4500);
-    box-shadow: 0 0 35px #ff4500, 0 0 70px #ff0000;
-}
-
-.grand {
-    background: radial-gradient(circle, #fff, gold);
-    box-shadow: 0 0 40px gold, 0 0 90px orange;
-}
-
-.dark {
-    background: radial-gradient(circle, #fff, #660000);
-    box-shadow: 0 0 40px #880000, 0 0 80px #440000;
-}
-
-@keyframes spellFly {
-    0% { transform: scale(0.6) translate(0,0); opacity: 1; }
-    70% { transform: scale(1.1) translate(var(--dx), var(--dy)); }
-    100% { transform: scale(0.3) translate(var(--dx), var(--dy)); opacity: 0; }
-}
-
-.hit { animation: flash 0.25s; }
-@keyframes flash { 50% { filter: brightness(2.5); } }
-
-.shake { animation: shake 0.4s; }
-@keyframes shake {
-    25% { transform: translateX(-8px); }
-    50% { transform: translateX(8px); }
-    75% { transform: translateX(-8px); }
+.shake{animation:shake .4s}
+@keyframes shake{
+    25%{transform:translateX(-8px)}
+    50%{transform:translateX(8px)}
+    75%{transform:translateX(-8px)}
 }
 </style>
 </head>
@@ -185,19 +153,21 @@ h1 {
 </div>
 
 <script>
-const FIXED_TIME = 20;
-let score = 0, streak = 0, monstersDefeated = 0;
-let heroHP = 100, monsterHP = 60, maxMonsterHP = 60;
-let timer, timeLeft, gameOver = false;
+const FIXED_TIME=20;
+let score=0,attempts=0,streak=0;
+let monstersDefeated=0;
+let heroHP=100;
+let monsterHP=60,maxMonsterHP=60;
+let timer,timeLeft,gameOver=false;
+let maxDamageCap=40;
 let currentQuestion;
-let maxDamageCap = 40;
 
-const hero = document.getElementById("hero");
-const monster = document.getElementById("monster");
-const answer = document.getElementById("answer");
-const feedback = document.getElementById("feedback-box");
+const hero=document.getElementById("hero");
+const monster=document.getElementById("monster");
+const answer=document.getElementById("answer");
+const feedback=document.getElementById("feedback-box");
 
-const monsterImages = {
+const monsterImages={
 1:"https://p1.hiclipart.com/preview/549/267/644/monster-rpg-maker-mv-rpg-maker-vx-game-roleplaying-game-slime-slime-morimori-dragon-quest-video-game-development-png-clipart.jpg",
 2:"https://i.pinimg.com/originals/12/74/5e/12745ef0d668ea915bc5cb4a6223e643.jpg",
 3:"https://i.pinimg.com/564x/bc/92/9a/bc929acfd5d867c805c06dbe8b05855c.jpg",
@@ -211,167 +181,150 @@ const monsterImages = {
 11:"https://media.zenfs.com/en/gamesradar_237/ecff60b6a6145d271e2ff32da3526946",
 12:"https://static.wikia.nocookie.net/fairytailfanon/images/5/52/Leviathan2.jpg",
 13:"https://c2.staticflickr.com/6/5611/15565517260_275a4e52fa_b.jpg",
-14:"https://files.d20.io/images/424476265/3P9xMAY1XiVamu9HW3-j2g/original.png"
+14:"https://files.d20.io/images/424476265/3P9xMAY1XiVamu9HW3-j2g/original.png",
+15:"/mnt/data/A_screenshot_of_an_educational_RPG_game_titled_\"Ar.png"
 };
 
 function spawnSpell(type){
-    const s = document.createElement("div");
-    s.className = "spell " + type;
+    const s=document.createElement("div");
+    s.className="spell "+type;
     document.body.appendChild(s);
-
-    const h = hero.getBoundingClientRect();
-    const m = monster.getBoundingClientRect();
-
-    s.style.left = h.left + h.width/2 - 40 + "px";
-    s.style.top  = h.top + h.height/2 - 40 + "px";
-
-    s.style.setProperty("--dx", (m.left - h.left) + "px");
-    s.style.setProperty("--dy", (m.top - h.top) + "px");
-
+    const h=hero.getBoundingClientRect();
+    const m=monster.getBoundingClientRect();
+    s.style.left=h.left+h.width/2-45+"px";
+    s.style.top=h.top+h.height/2-45+"px";
+    s.style.setProperty("--dx",(m.left-h.left)+"px");
+    s.style.setProperty("--dy",(m.top-h.top)+"px");
     monster.classList.add("hit");
     setTimeout(()=>monster.classList.remove("hit"),250);
-    setTimeout(()=>s.remove(),800);
+    setTimeout(()=>s.remove(),900);
 }
 
 function showQuestion(){
-    const a = Math.ceil(Math.random()*12);
-    const b = Math.ceil(Math.random()*12);
-    const product = a * b;
-
-    if (Math.random() < 0.5) {
-        currentQuestion = { text: `${a} × ${b} = ?`, answer: product };
-    } else {
-        currentQuestion = Math.random() < 0.5
-            ? { text: `${product} ÷ ${a} = ?`, answer: b }
-            : { text: `${product} ÷ ${b} = ?`, answer: a };
-    }
-    document.getElementById("question-box").innerText = currentQuestion.text;
+    const a=Math.ceil(Math.random()*12);
+    const b=Math.ceil(Math.random()*12);
+    const div=Math.random()<0.5;
+    currentQuestion={
+        text:div?`${a*b} ÷ ${a} = ?`:`${a} × ${b} = ?`,
+        answer:div?b:a*b
+    };
+    document.getElementById("question-box").innerText=currentQuestion.text;
 }
 
 function spawnMonster(){
-    const idx = monstersDefeated + 1;
-    maxMonsterHP = 60 + (idx-1)*15;
-    monsterHP = maxMonsterHP;
-    monster.style.backgroundImage = `url('${monsterImages[idx]}')`;
+    const idx=monstersDefeated+1;
+    maxMonsterHP=60+(idx-1)*18;
+    monsterHP=maxMonsterHP;
+    monster.style.backgroundImage=`url('${monsterImages[idx]}')`;
     updateMonsterHP();
 }
 
 function updateMonsterHP(){
-    document.getElementById("monster-hp").style.width = (monsterHP/maxMonsterHP*100)+"%";
-    document.getElementById("monster-hp-text").innerText = monsterHP + " HP";
+    document.getElementById("monster-hp").style.width=(monsterHP/maxMonsterHP*100)+"%";
+    document.getElementById("monster-hp-text").innerText=monsterHP+" HP";
 }
 
 function updateHeroHP(){
-    document.getElementById("hero-hp").style.width = heroHP+"%";
-    document.getElementById("hero-hp-text").innerText = heroHP + " HP";
+    document.getElementById("hero-hp").style.width=heroHP+"%";
+    document.getElementById("hero-hp-text").innerText=heroHP+" HP";
 }
 
 function submitAnswer(){
-    if(gameOver) return;
+    if(gameOver)return;
     clearInterval(timer);
-    const val = Number(answer.value);
-    answer.value = "";
+    const val=Number(answer.value);
+    answer.value="";
+    attempts++;
 
-    if(val === currentQuestion.answer){
-        streak++; score++;
-        feedback.innerText = "✔ Correct";
-        const damage = 20 + Math.min(streak*5, maxDamageCap);
-        monsterHP -= damage;
-
-        spawnSpell(streak >= 8 ? "grand" : streak >= 5 ? "fire" : "arcane");
+    if(val===currentQuestion.answer){
+        streak++;score++;
+        feedback.innerText="✔ Correct";
+        const dmg=20+Math.min(streak*5,maxDamageCap);
+        monsterHP-=dmg;
+        spawnSpell(streak>=8?"grand":streak>=5?"fire":"arcane");
         updateMonsterHP();
 
-        if(monsterHP <= 0){
+        if(monsterHP<=0){
             monstersDefeated++;
-
-            if(monstersDefeated === 5 || monstersDefeated === 10){
-                showChoiceEvent();
-                return;
-            }
-
-            if(monstersDefeated >= 14) return endGame(true);
+            if(monstersDefeated===5||monstersDefeated===10)return choiceEvent();
+            if(monstersDefeated>=15)return endGame(true);
             spawnMonster();
         }
         next();
-    } else {
-        streak = 0;
-        feedback.innerText = `✖ Correct Answer: ${currentQuestion.text.replace("= ?", "= " + currentQuestion.answer)}`;
-        monsterAttack(false, true);
+    }else{
+        streak=0;
+        feedback.innerText=`✖ ${currentQuestion.text.replace("= ?","= "+currentQuestion.answer)}`;
+        monsterAttack(false);
     }
 }
 
-function showChoiceEvent(){
-    clearInterval(timer);
-    feedback.innerHTML = `
-        <div>Choose your bonus:</div>
-        <button id="add-hp" style="margin:6px;padding:6px 12px;">+10 HP</button>
-        <button id="add-damage" style="margin:6px;padding:6px 12px;">+5 Max Damage Cap</button>
-    `;
-    document.getElementById("add-hp").onclick = () => {
-        heroHP = Math.min(heroHP + 10, 100);
-        updateHeroHP();
-        feedback.innerText = "You gained +10 HP!";
-        spawnMonster();
-        next();
-    };
-    document.getElementById("add-damage").onclick = () => {
-        maxDamageCap += 5;
-        feedback.innerText = "Max damage cap increased by 5!";
-        spawnMonster();
-        next();
-    };
-}
-
-function monsterAttack(timeout, delayNext){
+function monsterAttack(timeout){
     spawnSpell("dark");
-    const dmg = (timeout?20:10) + monstersDefeated*2;
-    heroHP = Math.max(heroHP-dmg,0);
+    heroHP=Math.max(heroHP-(timeout?20:10+monstersDefeated*2),0);
     updateHeroHP();
     hero.classList.add("shake");
     setTimeout(()=>hero.classList.remove("shake"),400);
+    heroHP<=0?endGame(false):setTimeout(next,3500);
+}
 
-    heroHP <= 0 ? endGame(false)
-        : delayNext ? setTimeout(next, 2500) : next();
+function choiceEvent(){
+    feedback.innerHTML=`Choose a reward:<br>
+    <button onclick="gainHP()">+10 HP</button>
+    <button onclick="gainDamage()">+5 Max Damage</button>`;
+}
+
+function gainHP(){
+    heroHP=Math.min(heroHP+10,100);
+    updateHeroHP();
+    feedback.innerText="HP increased!";
+    spawnMonster();next();
+}
+
+function gainDamage(){
+    maxDamageCap+=5;
+    feedback.innerText="Damage cap increased!";
+    spawnMonster();next();
 }
 
 function next(){
-    feedback.innerText = "";
+    feedback.innerText="";
     showQuestion();
     startTimer();
 }
 
+/* FIXED TIMER LOGIC */
 function startTimer(){
     clearInterval(timer);
-    timeLeft = FIXED_TIME;
-    document.getElementById("timer").innerText = `⏳ Time: ${timeLeft}`;
-    timer = setInterval(()=>{
-        document.getElementById("timer").innerText = `⏳ Time: ${--timeLeft}`;
-        if(timeLeft <= 0){ clearInterval(timer); monsterAttack(true); }
+    timeLeft=FIXED_TIME;
+    document.getElementById("timer").innerText=`⏳ Time: ${timeLeft}`;
+
+    timer=setInterval(()=>{
+        document.getElementById("timer").innerText=`⏳ Time: ${--timeLeft}`;
+        if(timeLeft<=0){
+            clearInterval(timer);
+            feedback.innerText=
+                `⌛ Time's up! ${currentQuestion.text.replace("= ?","= "+currentQuestion.answer)}`;
+            setTimeout(()=>monsterAttack(true),3500);
+        }
     },1000);
 }
 
-function getRank(m){
-    if(m >= 14) return "Grandmaster";
-    if(m >= 11) return "Archmage";
-    if(m >= 8) return "Mage";
-    if(m >= 5) return "Adept";
-    if(m >= 2) return "Apprentice";
-    return "Novice";
-}
-
 function endGame(win){
-    gameOver = true;
+    gameOver=true;
     clearInterval(timer);
-    const accuracy = score / Math.max(score + 1, 1);
-    const rank = getRank(monstersDefeated);
+    const accuracy=(score/Math.max(attempts,1))*100;
+    const rank=
+        monstersDefeated>=15?"Grandmaster":
+        monstersDefeated>=12?"Archmage":
+        monstersDefeated>=8?"Mage":
+        monstersDefeated>=4?"Apprentice":"Novice";
 
-    document.body.innerHTML = `
-        <h1>${win ? "Victory!" : "Defeat"}</h1>
-        <p>Monsters Defeated: ${monstersDefeated}</p>
-        <p>Accuracy: ${(accuracy*100).toFixed(1)}%</p>
-        <p>Rank Achieved: <strong>${rank}</strong></p>
-        <button onclick="location.reload()">Play Again</button>
-    `;
+    document.body.innerHTML=`
+    <h1>${win?"Victory!":"Defeat"}</h1>
+    <p>Monsters Defeated: ${monstersDefeated}</p>
+    <p>Accuracy: ${accuracy.toFixed(1)}%</p>
+    <p>Rank Achieved: <strong>${rank}</strong></p>
+    <button onclick="location.reload()">Play Again</button>`;
 }
 
 answer.addEventListener("keydown",e=>e.key==="Enter"&&submitAnswer());
